@@ -16,25 +16,33 @@ class NewObstacleDetecor:
     def callback_arrived(self, object):
         self.arrived = object.data
         
-    def loop():
-        while not rospy_is_shutdown():
+    def loop(self):
+        rate=rospy.Rate(50)
+        while not rospy.is_shutdown():
 
-            if arrived: 
+            if self.arrived: 
                 self.same_obsatcle_counter = 0
+                self.arrived = False
+                print "same_obstacle_counter", self.same_obsatcle_counter
 
-            if not safeSub.safe:
+            if not self.safe:
                 self.same_obstacle_counter+= 1
+                print "same_obstacle_counter", self.same_obsatcle_counter
 
             # publish new_obstacle only once with the value True each time a new obstacle is encountered
             # otherwise no messages are published (no callback are called by the subscribers)
-            if sameObstacle.counter == 1: 
-                new_obstacle = True
-                newObstPub.pub.publish(new_obstacle)
+            if self.same_obstacle_counter == 1: 
+                self.new_obstacle = True
+                self.new_obstacle_pub.publish(self.new_obstacle)
+                print "new obstacle", self.new_obstacle
 
-    def __init__():   
+            rate.sleep()
+
+    def __init__(self):   
 
         # attribute initialization
         self.safe = True
+        self.arrived = True 
         self.same_obstacle_counter = 0
         
         # subscribers
