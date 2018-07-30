@@ -123,8 +123,8 @@ class miro_ros_client:
 		
 	    elif self.drive_pattern == "Pcontroller":
 		d_ref = 0.5
-		Kp =  0.25 / 0.5
-		v = 200
+		Kp =  1
+		v = 100
 		# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left and moves away from the wall on the right
 		error = (d_ref - self.platform_sensors.sonar_range.range)
 		self.body_vel.angular.z = Kp * error
@@ -136,6 +136,7 @@ class miro_ros_client:
 	    elif self.drive_pattern == "PIDcontroller":
 		v = 100
 		self.body_vel.angular.z = self.control_effort
+		self.body_vel.linear.x = +v 
 
             else:
                 # do-si-do
@@ -230,12 +231,12 @@ class miro_ros_client:
         self.active = False
 
         # topic root
-	self.robot_name = rospy.get_param('robot_name', 'sim01')
+	self.robot_name = rospy.get_param('robot_name') # sim01 for simulation rob01 for real miro
         topic_root = "/miro/" + self.robot_name
         print "topic_root", topic_root
 
 	# drive pattern
-	self.drive_pattern = rospy.get_param('drive_pattern', 'square')
+	self.drive_pattern = rospy.get_param('~drive_pattern') #PIDcontroller for online pid tuning of angular velocity gains
         print "drive_pattern", self.drive_pattern
         
         # publish

@@ -1,8 +1,11 @@
 <launch>
 
+    <param name="robot_name" value="sim01" />
+
+    <node name="odometry_publisher_with_parameters" pkg="miro" type="odometry_publisher_with_parameters.py" />
+
     <node name="my_miro_ros_client_with_parameters" pkg="miro" type="my_miro_ros_client_with_parameters.py" > 
-	<param name="robot_name" value="sim01" />
-	<param name="drive_pattern" value="PIDcontroller" />
+      <param name="drive_pattern" value="Pcontroller" />
     </node>
 
     <node name="sonar_msg_adapter" pkg="miro" type="sonar_msg_adapter.py" />
