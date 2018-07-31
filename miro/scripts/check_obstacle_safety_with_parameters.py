@@ -15,7 +15,7 @@ class ObstacleSafetyChecker():
             self.safe = False
         else:
             self.safe = True
-        safePub.pub.publish(safe)
+        self.safe_pub.publish(self.safe)
 
     def loop(self):
         while not rospy.is_shutdown():
