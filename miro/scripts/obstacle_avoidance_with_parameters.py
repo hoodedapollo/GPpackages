@@ -65,95 +65,6 @@ class miro_ros_client:
         # store object
         self.platform_sensors = object
 
-        # send downstream command, ignoring upstream data
-        q = platform_control()
-
-	if self.drive_pattern == "Pcontroller":
-		d_ref = 0.5
-		Kp =  1
-		v = 100
-		# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left 
-		# and moves away from the wall on the right
-		error = (d_ref - self.platform_sensors.sonar_range.range)
-		self.body_vel.angular.z = Kp * error
-		# for now v is constant
-		self.body_vel.linear.x = +v 
-		print 'error', error
-		print 'angular velocity (controller)' , self.body_vel.angular.z
-
-        	# publish
-        	q.body_vel = self.body_vel
-        	self.pub_platform_control.publish(q)
-
-	elif self.drive_pattern == "obstacle_avoidance":
-		# the robot circumnavigates the new obstacle clockwise until it reaches the m-line
-		if self.new_obstacle:
-
-			#rotate head to the right
-			self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
-			self.body_config = [0,0,-1.04,0] #yaw rotation 
-			
-			# publish
-			q.body_config_speed = self.body_config_speed
-			q.body_config = self.body_config
-			self.pub_platform_control.publish(q)
-			
-			#rotate 90 deg to the left
-			while self.th < 1.5708 and not rospy.is_shutdown():
-				self.body_vel.angular.z = 1.5708/2 # rad/s
-				
-				# publish
-				q.body_vel = self.body_vel
-        			self.pub_platform_control.publish(q)
-			
-
-			# go around the obstacle simple proportionaol controller until m-line is met (y axis)
-			# x_threshold is needed to avoid the robot thinks he is arrived when it is around the 
-			# the initial position: y = 0, x = 0
-			while (self.x < self.x_threshold or self.y > self.y_threshold) and not rospy.is_shutdown():
-
-				# control parameters
-				d_ref = 0.5
-				Kp =  1
-				v = 100
-				
-				# control action definition:
-				# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left 
-				# and moves away from the wall on the right
-				error = (d_ref - self.platform_sensors.sonar_range.range)
-				self.body_vel.angular.z = Kp * error
-				self.body_vel.linear.x = +v 
-				print 'error', error
-				print 'angular velocity (controller)', self.body_vel.angular.z
-				
-				# publish
-				q.body_vel = self.body_vel
-        			self.pub_platform_control.publish(q)
-
-			#rotate head to look forward
-			self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
-			self.body_config = [0,0,0,0] #yaw rotation 
-			
-			# publish
-			q.body_config_speed = self.body_config_speed
-			q.body_config = self.body_config
-			self.pub_platform_control.publish(q)
-			
-			#rotate to the left until the robot does not see the obstacle anymore
-			# do not tell the robot to re-orient as zero theta since it may hit the obstacle with the tail
-			while abs(self.th) < 0.05 and not rospy.is_shutdown():
-				self.body_vel.angular.z = 1.5708/2 # rad/s
-				
-				# publish
-				q.body_vel = self.body_vel
-        			self.pub_platform_control.publish(q)
-				
-			#publish True on /arrived topics once when the avoidance is complete
-			self.pub_arrived.publish(True) 
-			
-			# once the obstacle avoidance is complete reset the new_obstacle flag waiting for 
-			# the relative callback to update it 
-			self.new_obstacle = False
 
 
 
@@ -170,15 +81,99 @@ class miro_ros_client:
         self.th = yaw       
 
     def loop(self):
-        while True:
-            if rospy.core.is_shutdown():
-                break
-            time.sleep(1)
-            print "tick"
-            if rospy.core.is_shutdown():
-                break
-            time.sleep(1)
-            print "tock"
+        while not rospy.is_shutdown():
+
+		# send downstream command, ignoring upstream data
+		q = platform_control()
+
+		if self.drive_pattern == "Pcontroller":
+			d_ref = 0.5
+			Kp =  1
+			v = 100
+			# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left 
+			# and moves away from the wall on the right
+			error = (d_ref - self.platform_sensors.sonar_range.range)
+			self.body_vel.angular.z = Kp * error
+			# for now v is constant
+			self.body_vel.linear.x = +v 
+			print 'error', error
+			print 'angular velocity (controller)' , self.body_vel.angular.z
+
+			# publish
+			q.body_vel = self.body_vel
+			self.pub_platform_control.publish(q)
+
+		elif self.drive_pattern == "obstacle_avoidance":
+			# the robot circumnavigates the new obstacle clockwise until it reaches the m-line
+			if self.new_obstacle:
+
+				#rotate head to the right
+				self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
+				self.body_config = [0,0,-1.04,0] #yaw rotation 
+				
+				# publish
+				q.body_config_speed = self.body_config_speed
+				q.body_config = self.body_config
+				self.pub_platform_control.publish(q)
+				
+				#rotate 90 deg to the left
+				while abs(self.th) < 1.5708 and not rospy.is_shutdown():
+					self.body_vel.linear.x = 0
+					self.body_vel.angular.z = 1.5708/4 # rad/s
+					
+					# publish
+					q.body_vel = self.body_vel
+					self.pub_platform_control.publish(q)
+				
+
+				# go around the obstacle simple proportionaol controller until m-line is met (y axis)
+				# x_threshold is needed to avoid the robot thinks he is arrived when it is around the 
+				# the initial position: y = 0, x = 0
+				while (self.x < self.x_threshold or self.y > self.y_threshold) and not rospy.is_shutdown():
+
+					# control parameters
+					d_ref = 0.5
+					Kp =  1
+					v = 100
+					
+					# control action definition:
+					# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left 
+					# and moves away from the wall on the right
+					error = (d_ref - self.platform_sensors.sonar_range.range)
+					self.body_vel.angular.z = Kp * error
+					self.body_vel.linear.x = +v 
+					print 'error', error
+					print 'angular velocity (controller)', self.body_vel.angular.z
+					
+					# publish
+					q.body_vel = self.body_vel
+					self.pub_platform_control.publish(q)
+
+				#rotate head to look forward
+				self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
+				self.body_config = [0,0,0,0] #yaw rotation 
+				
+				# publish
+				q.body_config_speed = self.body_config_speed
+				q.body_config = self.body_config
+				self.pub_platform_control.publish(q)
+				
+				#rotate to the left until the robot does not see the obstacle anymore
+				# do not tell the robot to re-orient as zero theta since it may hit the obstacle with the tail
+				while abs(self.th) > 0.05 and not rospy.is_shutdown():
+					self.body_vel.linear.x = 0
+					self.body_vel.angular.z = 1.5708/4 # rad/s
+					
+					# publish
+					q.body_vel = self.body_vel
+					self.pub_platform_control.publish(q)
+					
+				#publish True on /arrived topics once when the avoidance is complete
+				self.pub_arrived.publish(True) 
+				
+				# once the obstacle avoidance is complete reset the new_obstacle flag waiting for 
+				# the relative callback to update it 
+				self.new_obstacle = False
 
     def __init__(self):
         
@@ -203,7 +198,7 @@ class miro_ros_client:
 	self.y = 0
 	self.th = 0
 
-	self.x_threshold = rospy.get_param('~x_threshold', 0.5)
+	self.x_threshold = rospy.get_param('~x_threshold', 0.2)
 	self.y_threshold = rospy.get_param('~y_threshold', 0.05)
 
         # set inactive
