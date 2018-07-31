@@ -22,12 +22,20 @@ class ObstacleSafetyChecker():
             rospy.spin()
 
     def __init__(self):
+
+	# robot topic
+	self.robot_name = rospy.get_param('robot_name', 'sim01')
+	topic_root = '/miro/' + self.robot_name
+	print 'topic_root', topic_root
+
+	# other parameters	
+        self.safety_threshold = rospy.get_param('~safety_thershold', 0.70)
+
         # attributes initialization
         self.sonar_distance = 0
-        self.safety_threshold = 0.70
 
-        # subscribers
-        rospy.Subscriber('miro/rob01/platform/sensors', platform_sensors, self.callback_sonar_distance, queue_size = 1)
+        # subscribe
+        rospy.Subscriber(topic_root + '/platform/sensors', platform_sensors, self.callback_sonar_distance, queue_size = 1)
 
         # publishers            .
         self.safe_pub = rospy.Publisher('safe', Bool, queue_size = 0)

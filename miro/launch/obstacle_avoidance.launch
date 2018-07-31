@@ -1,0 +1,15 @@
+<launch>
+
+    <param name="robot_name" value="sim01" />
+
+    <node name="check_obstacle_safety_with_parameters" pkg="miro" type="check_obstacle_safety_with_parameters.py" />
+    
+    <node name ="new_obstacle_detection_only_flags" pkg="miro" type="new_obstacle_detection_only_flags.py" />
+
+    <node name="odometry_publisher_with_parameters" pkg="miro" type="odometry_publisher_with_parameters.py" />
+
+    <node name="obstacle_avoidance_with_parameters" pkg="miro" type="obstacle_avoidance_with_parameters.py" > 
+      <param name="drive_pattern" value="obstacle_avoidance" />
+    </node>
+
+</launch>
