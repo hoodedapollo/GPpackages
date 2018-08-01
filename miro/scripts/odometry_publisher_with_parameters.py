@@ -25,22 +25,10 @@ import sys
 class OdometryEvaluator:
 
     def callback_miro_vel(self,object):
-        self.v = object.odometry.twist.twist.linear.x
-        self.w = object.odometry.twist.twist.angular.z
+            self.v = object.odometry.twist.twist.linear.x
+            self.w = object.odometry.twist.twist.angular.z
 
-    def callback_new_obstacle(self, object):
-        self.new_obstacle = object.data
-
-    def loop(self):
-#        rate = rospy.Rate(50.0)	
-        while not rospy.is_shutdown():
-
-            if self.new_obstacle:
-                    self.x = 0
-                    self.y = 0
-                    self.th = 0
-                    self.new_obstacle = False
-
+	
             self.current_time = rospy.Time.now()
                 
             #compute odometry of a 2,0 robot given the linear and angular velocities
@@ -80,6 +68,22 @@ class OdometryEvaluator:
             self.odom_pub.publish(odom)
 
             self.last_time = self.current_time;
+
+
+    def callback_new_obstacle(self, object):
+            self.new_obstacle = object.data
+
+            if self.new_obstacle:
+                    self.x = 0
+                    self.y = 0
+                    self.th = 0
+                    self.new_obstacle = False # avoid to init multiple times due to bad message synch
+
+    def loop(self):
+#        rate = rospy.Rate(50.0)	
+        while not rospy.is_shutdown():
+		rospy.spin()
+
 
 #            rate.sleep();
 

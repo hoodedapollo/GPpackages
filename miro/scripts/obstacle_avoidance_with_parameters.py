@@ -117,9 +117,9 @@ class miro_ros_client:
 				self.pub_platform_control.publish(q)
 				
 				#rotate 90 deg to the left
-				while abs(self.th) < 1.5708 and not rospy.is_shutdown():
+				while (abs(self.th) - 1.5708) < self.th_threshold_first_rotation and not rospy.is_shutdown():
 					self.body_vel.linear.x = 0
-					self.body_vel.angular.z = 1.5708/4 # rad/s
+					self.body_vel.angular.z = self.K_first_rotation * abs(abs(self.th) - 1.5708) # rad/s positive rotation to the left
 					
 					# publish
 					q.body_vel = self.body_vel
@@ -162,7 +162,7 @@ class miro_ros_client:
 				# do not tell the robot to re-orient as zero theta since it may hit the obstacle with the tail
 				while abs(self.th) > 0.05 and not rospy.is_shutdown():
 					self.body_vel.linear.x = 0
-					self.body_vel.angular.z = 1.5708/4 # rad/s
+					self.body_vel.angular.z = abs(self.th) # rad/s
 					
 					# publish
 					q.body_vel = self.body_vel
@@ -197,6 +197,10 @@ class miro_ros_client:
 	self.x = 0
 	self.y = 0
 	self.th = 0
+	
+	# first rotation parameters
+	self.th_threshold_first_rotation = rospy.get_param('~th_threshold_first_rotation')
+	self.K_first_rotation = rospy.get_param('~K_first_rotation')
 
 	self.x_threshold = rospy.get_param('~x_threshold', 0.2)
 	self.y_threshold = rospy.get_param('~y_threshold', 0.05)
