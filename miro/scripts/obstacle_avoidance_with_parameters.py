@@ -117,7 +117,7 @@ class miro_ros_client:
 				self.pub_platform_control.publish(q)
 				
 				#rotate 90 deg to the left
-				while (abs(self.th) - 1.5708) < self.th_threshold_first_rotation and not rospy.is_shutdown():
+				while abs(abs(self.th) - 1.5708) > self.th_threshold_first_rotation and not rospy.is_shutdown():
 					self.body_vel.linear.x = 0
 					self.body_vel.angular.z = self.K_first_rotation * abs(abs(self.th) - 1.5708) # rad/s positive rotation to the left
 					
@@ -125,23 +125,18 @@ class miro_ros_client:
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
 				
-
+#				rospy.sleep(5) #debug purposes	
+					
 				# go around the obstacle simple proportionaol controller until m-line is met (y axis)
 				# x_threshold is needed to avoid the robot thinks he is arrived when it is around the 
 				# the initial position: y = 0, x = 0
 				while (self.x < self.x_threshold or self.y > self.y_threshold) and not rospy.is_shutdown():
-
-					# control parameters
-					d_ref = 0.5
-					Kp =  1
-					v = 100
-					
 					# control action definition:
 					# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left 
 					# and moves away from the wall on the right
-					error = (d_ref - self.platform_sensors.sonar_range.range)
-					self.body_vel.angular.z = Kp * error
-					self.body_vel.linear.x = +v 
+					error = (self.d_ref_wall_following - self.platform_sensors.sonar_range.range)
+					self.body_vel.angular.z = self.K_wall_following * error
+					self.body_vel.linear.x = self.v_wall_following 
 					print 'error', error
 					print 'angular velocity (controller)', self.body_vel.angular.z
 					
@@ -157,6 +152,8 @@ class miro_ros_client:
 				q.body_config_speed = self.body_config_speed
 				q.body_config = self.body_config
 				self.pub_platform_control.publish(q)
+
+#				rospy.sleep(5) #debug purposes
 				
 				#rotate to the left until the robot does not see the obstacle anymore
 				# do not tell the robot to re-orient as zero theta since it may hit the obstacle with the tail
@@ -198,12 +195,18 @@ class miro_ros_client:
 	self.y = 0
 	self.th = 0
 	
-	# first rotation parameters
+	# first rotation control parameters
 	self.th_threshold_first_rotation = rospy.get_param('~th_threshold_first_rotation')
+
 	self.K_first_rotation = rospy.get_param('~K_first_rotation')
 
-	self.x_threshold = rospy.get_param('~x_threshold', 0.2)
-	self.y_threshold = rospy.get_param('~y_threshold', 0.05)
+	# wall following control parameters
+	self.d_ref_wall_following = rospy.get_param('~d_ref_wall_following') 
+	self.K_wall_following = rospy.get_param('~K_wall_following')
+	self.v_wall_following = rospy.get_param('~v_wall_following')
+
+	self.x_threshold = rospy.get_param('~x_threshold')
+	self.y_threshold = rospy.get_param('~y_threshold')
 
         # set inactive
         self.active = False

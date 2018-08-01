@@ -12,8 +12,11 @@
       <param name="drive_pattern" value="obstacle_avoidance" />
       <param name="x_threshold" value="0.2" />
       <param name="y_threshold" value="0.05" />
-      <param name="th_threshold_first_rotation" value="0.2" />
-      <param name="K_first_rotation" value="1.5" />
+      <param name="th_threshold_first_rotation" value="0.05" />
+      <param name="K_first_rotation" value="1" />
+      <param name="d_ref_wall_following" value="0.5" />
+      <param name="K_wall_following" value="1" />
+      <param name="v_wall_following" value="100" />
     </node>
 
  <!-- rqt_plot is a resource hog, so if you're seeing high CPU usage, don't launch rqt_plot  -->

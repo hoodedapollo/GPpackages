@@ -9,6 +9,9 @@ from std_msgs.msg import Bool
 import miro_msgs
 from miro_msgs.msg import platform_sensors
 
+import gazebo_msgs
+from gazebo_msgs.srv import GetModelState
+
 import nav_msgs
 from nav_msgs.msg import Odometry  	
 
@@ -24,11 +27,28 @@ import sys
 
 class OdometryEvaluator:
 
-    def callback_miro_vel(self,object):
-            self.v = object.odometry.twist.twist.linear.x
-            self.w = object.odometry.twist.twist.angular.z
+    def callback_new_obstacle(self, object):
+            self.new_obstacle = object.data
 
-	
+
+    def loop(self):
+#        rate = rospy.Rate(50.0)	
+        while not rospy.is_shutdown():
+
+	    resp_from_gazebo = self.gazebo_model_state_serv(self.robot_name, 'body') 
+	    self.v = resp_from_gazebo.twist.linear.x
+	    self.w = resp_from_gazebo.twist.angular.z
+
+            if self.new_obstacle:
+                    self.x = 0
+                    self.y = 0
+                    self.th = 0
+                    self.new_obstacle = False # avoid to init multiple times due to bad message synch
+
+		    # as a precaution reinitialize also the velocities
+	            self.w = 0
+		    self.v = 0
+
             self.current_time = rospy.Time.now()
                 
             #compute odometry of a 2,0 robot given the linear and angular velocities
@@ -69,26 +89,6 @@ class OdometryEvaluator:
 
             self.last_time = self.current_time;
 
-
-    def callback_new_obstacle(self, object):
-            self.new_obstacle = object.data
-
-            if self.new_obstacle:
-                    self.x = 0
-                    self.y = 0
-                    self.th = 0
-                    self.new_obstacle = False # avoid to init multiple times due to bad message synch
-
-		    # as a precaution reinitialize also the velocities
-	            self.w = 0
-		    self.v = 0
-
-    def loop(self):
-#        rate = rospy.Rate(50.0)	
-        while not rospy.is_shutdown():
-		rospy.spin()
-
-
 #            rate.sleep();
 
     def __init__(self):
@@ -117,10 +117,12 @@ class OdometryEvaluator:
         self.last_time = rospy.Time.now()	
 
         # subscribers
-        self.platform_semsors_sub = rospy.Subscriber(topic_root + '/platform/sensors', 
-                platform_sensors, self.callback_miro_vel, queue_size = 1)
         self.new_obstacle_sub = rospy.Subscriber('/new_obstacle', 
                 Bool, self.callback_new_obstacle, queue_size = 1)	
+
+	# services
+	self.gazebo_model_state_serv = rospy.ServiceProxy('gazebo_msgs/get_model_state', GetModelState)
+	self.robot_name = rospy.get_param('robot_name')
 
         # publishers
         self.odom_pub = rospy.Publisher('/odom', Odometry, queue_size = 0)	
