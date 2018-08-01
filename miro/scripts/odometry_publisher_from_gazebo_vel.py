@@ -35,7 +35,7 @@ class OdometryEvaluator:
 #        rate = rospy.Rate(50.0)	
         while not rospy.is_shutdown():
 
-	    resp_from_gazebo = self.gazebo_model_state_serv(self.robot_name, 'body') 
+	    resp_from_gazebo = self.gazebo_model_state_serv(self.robot_name, 'miro_body::body') 
 	    self.v = resp_from_gazebo.twist.linear.x
 	    self.w = resp_from_gazebo.twist.angular.z
 
@@ -98,7 +98,7 @@ class OdometryEvaluator:
         print(sys.version)
 
 	# topic root
-	self.robot_name = rospy.get_param('robot_name') # sim01 for simulation rob01 for real miro
+	self.robot_name = rospy.get_param('robot_name', 'sim01') # sim01 for simulation rob01 for real miro
         topic_root = "/miro/" + self.robot_name
         print "topic_root", topic_root
 
@@ -121,8 +121,7 @@ class OdometryEvaluator:
                 Bool, self.callback_new_obstacle, queue_size = 1)	
 
 	# services
-	self.gazebo_model_state_serv = rospy.ServiceProxy('gazebo_msgs/get_model_state', GetModelState)
-	self.robot_name = rospy.get_param('robot_name')
+	self.gazebo_model_state_serv = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
 
         # publishers
         self.odom_pub = rospy.Publisher('/odom', Odometry, queue_size = 0)	
