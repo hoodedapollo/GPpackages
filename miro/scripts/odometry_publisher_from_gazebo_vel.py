@@ -35,7 +35,7 @@ class OdometryEvaluator:
 #        rate = rospy.Rate(50.0)	
         while not rospy.is_shutdown():
 
-	    resp_from_gazebo = self.gazebo_model_state_serv(self.robot_name, 'miro_body::body') 
+	    resp_from_gazebo = self.gazebo_model_state_serv(self.robot_name, 'miro_head::head') 
 	    self.v = resp_from_gazebo.twist.linear.x
 	    self.w = resp_from_gazebo.twist.angular.z
 
