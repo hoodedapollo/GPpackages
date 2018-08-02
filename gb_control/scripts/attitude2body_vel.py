@@ -34,7 +34,7 @@ class rpy2body_vel():
         self.rpy = [0,0,0]
 
         self.subSmartwatch = rospy.Subscriber('/rpy_deg',Vector3Stamped,self.callbackrpy,queue_size=1)
-        self.pub_mapping = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
+        self.pub_mapping = rospy.Publisher('/gesture_based_behaviour', Twist, queue_size=0)
 
     def callbackimu(self,imux):
 
@@ -48,7 +48,7 @@ class rpy2body_vel():
         self.rpy[2] = sw_data.vector.z#to modify
 
 
-        q=platform_control()
+        #q=platform_control()
         self.sw_vel=Twist()
 
         newroll=self.rpy[0]+70
@@ -77,8 +77,8 @@ class rpy2body_vel():
             print ('MiRo follow your owner')
 
 
-        q.body_vel = self.sw_vel
-        self.pub_mapping.publish(q)
+        #q.body_vel = self.sw_vel
+        self.pub_mapping.publish(self.sw_vel)
 
     def main (self):
         rospy.spin()
