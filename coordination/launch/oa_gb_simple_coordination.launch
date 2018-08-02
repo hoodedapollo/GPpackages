@@ -1,20 +1,20 @@
 <launch>
 
+<!-- remember to launch mosquitto and to connect the smartphone prior to launch this -->
+
 <!-- ROBOT NAME --> 
     <param name="robot_name" value="sim01" />
 
-<!-- MQTT BRIDGE -->
-    <include file="$(find mqtt_ros_bridge)/launch/imu_bridge.launch" />
+<!-- MIRO GAZEBO_ROS -->
+    <include file="$(find miro)/launch/miro_gazebo_ros.launch" />
 
-<!-- IMU COMPLEMANTARY FILTER -->
-    <node name="imu_complementary_filter" pkg="imu_complementary_filter" type="complementary_filter_node"/> 
+<!-- GESTURE BASED -->
+    <include file="$(find gb_control)/launch/gb_control.launch" />
 
-    <node name="rad2deg" pkg="gb_control" type="rad2deg.py" />
+<!-- GESTURE BASED -->
+    <include file="$(find miro)/launch/obstacle_avoidance_to_coordination.launch" />
 
-    <node name="attitude2body_vel" pkg="gb_control" type="attitude2body_vel.py" />
-
-<!-- RQT PLOT ROBOT POSITION FROM ODOMETRY -->
-    <node name="rqt_plot_angles" pkg="rqt_plot" type="rqt_plot"
-    args="/rpy_deg" />
+<!-- COORDINATION-->
+    <node name="coordination" pkg="coordination" type="coordination.py"/> 
 
 </launch>

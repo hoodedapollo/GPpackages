@@ -17,7 +17,7 @@
       <param name="K_first_rotation" value="1" />
       <param name="d_ref_wall_following" value="0.5" />
       <param name="K_wall_following" value="1" />
-      <param name="v_wall_following" value="100" />
+      <param name="v_wall_following" value="200" />
     </node>
 
 <!-- RVIZ VISUALIZATION -->

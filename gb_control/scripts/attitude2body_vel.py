@@ -28,62 +28,98 @@ from datetime import datetime
 
 class rpy2body_vel():
 
-    def __init__(self):
+	def __init__(self):
 
-        #Last acelleration data received
-        self.rpy = [0,0,0]
+        	#Last acelleration data received
 
-        self.subSmartwatch = rospy.Subscriber('/rpy_deg',Vector3Stamped,self.callbackrpy,queue_size=1)
-        self.pub_mapping = rospy.Publisher('/gesture_based_behaviour', Twist, queue_size=0)
+		self.last_acc = [0,0,0]
+        	self.rpy = [0,0,0]
+		self.switch=rospy.get_param('~switch','linear')
+		self.sw_vel=Twist()
+		self.body_vel=Twist()
 
-    def callbackimu(self,imux):
 
-        self.gyro_vel=imux.angular_velocity.z
+        	self.subAttitude = rospy.Subscriber('/rpy_deg',Vector3Stamped,self.callbackrpy,queue_size=1)
+		self.subLinear = rospy.Subscriber('/imu/data_raw',Imu,self.callbacklinear,queue_size=1)
+        	self.pub_gesture_control = rospy.Publisher('/gesture_based_behaviour', Twist, queue_size=0)
+		
+
+	def callbackimu(self,imux):
+
+        	self.gyro_vel=imux.angular_velocity.z
+	
+	def callbacklinear(self,sm_data):
+
+		self.last_acc[0] = sm_data.linear_acceleration.x
+        	self.last_acc[1] = sm_data.linear_acceleration.y
+        	self.last_acc[2] = sm_data.linear_acceleration.z
+		
+		
+        
+        	if  -2 < self.last_acc[0] < 2 and -2 < self.last_acc[1] < 2:
+                	self.body_vel.linear.x=0.0
+                	self.body_vel.angular.z=0.0
+                	print ('MiRo STAY Still')
+		else:
+			 
+
+        		self.body_vel.linear.x=self.last_acc[0]*50
+        		self.body_vel.angular.z=self.last_acc[1]*0.5
+        		print ('MiRo Go normal')
+		
+			
  
+	def callbackrpy(self,sw_data):
 
-    def callbackrpy(self,sw_data):
-
-        self.rpy[0] = sw_data.vector.x#to modify
-        self.rpy[1] = sw_data.vector.y#to modify
-        self.rpy[2] = sw_data.vector.z#to modify
+        	self.rpy[0] = sw_data.vector.x#to modify
+        	self.rpy[1] = sw_data.vector.y#to modify
+        	self.rpy[2] = sw_data.vector.z#to modify
 
 
         #q=platform_control()
-        self.sw_vel=Twist()
+        	
 
-        newroll=self.rpy[0]+70
+        	newroll=self.rpy[0]+70
 
         #1) TO DO: MODIFY THE THRESHOLD
-        if  -15 < newroll < 15 and -20 < self.rpy[1] < 20:
-            self.sw_vel.linear.x=0.0
-            self.sw_vel.angular.z=0.0
-            print ('MiRo STAY Still')
+        	if  -15 < newroll < 15 and -20 < self.rpy[1] < 20:
+            		self.sw_vel.linear.x=0.0
+            		self.sw_vel.angular.z=0.0
+            		print ('MiRo STAY Still')
 
-        elif self.rpy[1] > 40 or self.rpy[1] < -60:
+        	elif self.rpy[1] > 40 or self.rpy[1] < -60:
 
-            self.sw_vel.linear.x=self.rpy[1]*6
-            self.sw_vel.angular.z=0.0
-            print ( 'max linear velocity')
+            		self.sw_vel.linear.x=self.rpy[1]*6
+            		self.sw_vel.angular.z=0.0
+            		print ( 'max linear velocity')
 
 
         #if self.rpy[2] > 60:
 
         #self.lastyaw=True
  
-        else:
+        	else:
 
-            self.sw_vel.linear.x=0.0
-            self.sw_vel.angular.z=-newroll*0.5*pi/180
-            print ('MiRo follow your owner')
+            		self.sw_vel.linear.x=0.0
+            		self.sw_vel.angular.z=-newroll*0.5*pi/180
+            		print ('MiRo follow your owner')
 
 
-        #q.body_vel = self.sw_vel
-        self.pub_mapping.publish(self.sw_vel)
+        	#q.body_vel = self.sw_vel
 
-    def main (self):
-        rospy.spin()
+	def loop(self):
+
+        	while not rospy.is_shutdown():
+
+			if self.switch == 'linear':
+				self.pub_gesture_control.publish(self.body_vel)
+			if self.switch == 'attitude':
+				self.pub_gesture_control.publish(self.sw_vel)
+
+    
 
 if __name__=='__main__':
     rospy.init_node('attitude2body_vel')
     attitudebasecontrol = rpy2body_vel()
-    attitudebasecontrol.main()
+    attitudebasecontrol.loop()
+	
