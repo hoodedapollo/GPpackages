@@ -103,15 +103,13 @@ class Behavior():
         #Obstacle Avoidance Behavior
         self.v_oa=0.0
         self.w_oa=0.0
-	self.config=[0.0,0.0,0.0,0.0]
-	self.config_speed=[0.0,0.0,0.0,0.0]
         #Gesture Based Behavior
         self.v_gb=0.0
         self.w_gb=0.0
 
       
         self.subGBB = rospy.Subscriber('/gesture_based_behaviour',Twist, self.callbackGBB,queue_size=1)
-        self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',platform_control, self.callbackOAB,queue_size=1)
+        self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',Twist, self.callbackOAB,queue_size=1)
         
 
     def callbackGBB( self, twist_gb):
@@ -122,11 +120,8 @@ class Behavior():
     
     def callbackOAB(self, twist_oa):
         
-        self.v_oa=twist_oa.body_vel.linear.x 
-        self.w_oa=twist_oa.body_vel.angular.z
-	self.config=twist_oa.body_config
-	self.config_speed=twist_oa.body_config_speed
-	
+        self.v_oa=twist_oa.linear.x 
+        self.w_oa=twist_oa.angular.z 
 
 class MultipleBehavior():
 
@@ -138,7 +133,7 @@ class MultipleBehavior():
 	self.flag = True 
 
         #define Publisher
-        self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
+        self.pub_platform_control = rospy.Publisher('/miro/rob01/platform/control', platform_control, queue_size=0)
 
     def BehaviorCoordination (self):
         
@@ -165,8 +160,6 @@ class MultipleBehavior():
         	rospy.loginfo(self.r.gb)
         	q = platform_control()
         	q.body_vel = self.body_vel
-		q.body_config=self.b.config
-		q.body_config_speed=self.b.config_speed
 
         	self.pub_platform_control.publish(q)
 
