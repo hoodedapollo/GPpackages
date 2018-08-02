@@ -11,9 +11,7 @@
 
     <node name="rad2deg" pkg="gb_control" type="rad2deg.py" />
 
-    <node name="attitude2body_vel" pkg="gb_control" type="attitude2body_vel.py">
-        <param name="switch" value="linear" />
-    </node>
+    <node name="attitude2body_vel" pkg="gb_control" type="attitude2body_vel.py" />
 
 <!-- RQT PLOT ROBOT POSITION FROM ODOMETRY -->
     <node name="rqt_plot_angles" pkg="rqt_plot" type="rqt_plot"
