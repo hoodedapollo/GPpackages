@@ -33,6 +33,7 @@
 
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
+#include <geometry_msgs/Quaternion.h>
 
 namespace imu_tools {
 
@@ -69,7 +70,7 @@ ComplementaryFilterROS::ComplementaryFilterROS(
   // Register magnetic data subscriber.
   if (use_mag_)
   {
-    mag_subscriber_.reset(new MagSubscriber(nh_, ros::names::resolve("imu") + "/mag", queue_size));
+    mag_subscriber_.reset(new MagSubscriber(nh_, ros::names::resolve("imu") + "/data_raw", queue_size));
 
     sync_.reset(new Synchronizer(
         SyncPolicy(queue_size), *imu_subscriber_, *mag_subscriber_));
@@ -101,17 +102,17 @@ void ComplementaryFilterROS::initializeParams()
   if (!nh_private_.getParam ("use_mag", use_mag_))
     use_mag_ = false;
   if (!nh_private_.getParam ("publish_tf", publish_tf_))
-    publish_tf_ = false;
+    publish_tf_ = true;
   if (!nh_private_.getParam ("reverse_tf", reverse_tf_))
     reverse_tf_ = false;
   if (!nh_private_.getParam ("constant_dt", constant_dt_))
     constant_dt_ = 0.0;
   if (!nh_private_.getParam ("publish_debug_topics", publish_debug_topics_))
-    publish_debug_topics_ = false;
+    publish_debug_topics_ = true;
   if (!nh_private_.getParam ("gain_acc", gain_acc))
     gain_acc = 0.01;
   if (!nh_private_.getParam ("gain_mag", gain_mag))
-    gain_mag = 0.01;
+    gain_mag = 0.02;
   if (!nh_private_.getParam ("do_bias_estimation", do_bias_estimation))
     do_bias_estimation = true;
   if (!nh_private_.getParam ("bias_alpha", bias_alpha))
@@ -145,7 +146,7 @@ void ComplementaryFilterROS::initializeParams()
   }
 }
 
-void ComplementaryFilterROS::imuCallback(const ImuMsg::ConstPtr& imu_msg_raw)
+ void ComplementaryFilterROS::imuCallback(const ImuMsg::ConstPtr& imu_msg_raw)
 {
   const geometry_msgs::Vector3& a = imu_msg_raw->linear_acceleration; 
   const geometry_msgs::Vector3& w = imu_msg_raw->angular_velocity;
@@ -173,14 +174,14 @@ void ComplementaryFilterROS::imuCallback(const ImuMsg::ConstPtr& imu_msg_raw)
 
   // Publish state.     
   publish(imu_msg_raw);
-}
+} 
 
 void ComplementaryFilterROS::imuMagCallback(const ImuMsg::ConstPtr& imu_msg_raw,
                                             const MagMsg::ConstPtr& mag_msg)
 {
   const geometry_msgs::Vector3& a = imu_msg_raw->linear_acceleration; 
   const geometry_msgs::Vector3& w = imu_msg_raw->angular_velocity;
-  const geometry_msgs::Vector3& m = mag_msg->magnetic_field;
+  const geometry_msgs::Quaternion m = imu_msg_raw->orientation;
   const ros::Time& time = imu_msg_raw->header.stamp;
     
   // Initialize.
