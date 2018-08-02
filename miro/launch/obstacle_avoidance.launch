@@ -1,7 +1,8 @@
 <launch>
-
+<!-- ROBOT NAME --> 
     <param name="robot_name" value="sim01" />
 
+<!-- OBSTACLE BEHAVIOUR NODES --> 
     <node name="check_obstacle_safety_with_parameters" pkg="miro" type="check_obstacle_safety_with_parameters.py" />
     
     <node name ="new_obstacle_detection_only_flags" pkg="miro" type="new_obstacle_detection_only_flags.py" />
@@ -19,7 +20,11 @@
       <param name="v_wall_following" value="100" />
     </node>
 
- <!-- rqt_plot is a resource hog, so if you're seeing high CPU usage, don't launch rqt_plot  -->
+<!-- RVIZ VISUALIZATION -->
+    <node name="rviz" pkg="rviz" type="rviz" 
+    args="-d $(find miro)/rviz/miro_obstacle_avoidance.rviz" />
+
+<!-- RQT PLOT ROBOT POSITION FROM ODOMETRY -->
     <node name="rqt_plot_position" pkg="rqt_plot" type="rqt_plot"
     args="/odom/pose/pose/position" />
 
