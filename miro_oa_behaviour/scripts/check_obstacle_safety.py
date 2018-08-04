@@ -24,7 +24,7 @@ class ObstacleSafetyChecker():
     def __init__(self):
 
 	# robot topic
-	self.robot_name = rospy.get_param('robot_name', 'sim01')
+	self.robot_name = rospy.get_param('/robot_name', 'sim01')
 	topic_root = '/miro/' + self.robot_name
 	print 'topic_root', topic_root
 

@@ -1,6 +1,6 @@
 <launch>
 <!-- ROBOT NAME --> 
-    <param name="robot_name" value="sim01" />
+    <param name="/robot_name" value="sim01" />
 
 <!-- OBSTACLE BEHAVIOUR NODES --> 
 

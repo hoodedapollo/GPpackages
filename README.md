@@ -1,7 +1,7 @@
 # GPpackages
 
-in order to use gazebo services you need to run it using roslaunch instead of the script provided in mdk by consequential
 
+in order to use gazebo services you need to run it using roslaunch instead of the script provided in mdk by consequential
 to do this add this two line to the .bashrc file to make available to gazebo the models and the plugins needed to 
 properly set up a miro .world
 copy a file .word in a directory worlds in the miro package and use a launch file as the one in this repo

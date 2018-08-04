@@ -83,12 +83,12 @@ class Releaser():
     def callbackSafety(self,arrived): 
 
         self.gb=arrived.data
-	    self.oa=False
+	self.oa=False
 
     def callbackGoal(self,new_obstacle):
 
         self.oa=new_obstacle.data
-	    self.gb=False
+	self.gb=False
 
     #def callbackSwState(self, smartwatch):
 
@@ -103,8 +103,8 @@ class Behavior():
         #Obstacle Avoidance Behavior
         self.v_oa=0.0
         self.w_oa=0.0
-	    self.config=[0.0,0.0,0.0,0.0]
-	    self.config_speed=[0.0,0.0,0.0,0.0]
+        self.config=[0.0,0.0,0.0,0.0]
+        self.config_speed=[0.0,0.0,0.0,0.0]
         #Gesture Based Behavior
         self.v_gb=0.0
         self.w_gb=0.0
@@ -124,8 +124,8 @@ class Behavior():
         
         self.v_oa=twist_oa.body_vel.linear.x 
         self.w_oa=twist_oa.body_vel.angular.z
-	    self.config=twist_oa.body_config
-	    self.config_speed=twist_oa.body_config_speed
+        self.config=twist_oa.body_config
+        self.config_speed=twist_oa.body_config_speed
 	
 
 class MultipleBehavior():
@@ -135,7 +135,7 @@ class MultipleBehavior():
 
         self.r = Releaser()
         self.b = Behavior()
-	    self.flag = True 
+        self.flag = True 
 
         #define Publisher
         self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
@@ -144,30 +144,29 @@ class MultipleBehavior():
         
         self.body_vel=Twist()
 
-	    while not rospy.is_shutdown():
+	while not rospy.is_shutdown():
 
 
-		    if self.r.gb:
+		if self.r.gb:
 
-			    print "|GESTURE BASED|"
+			print "|GESTURE BASED|"
+			self.body_vel.linear.x=self.b.v_gb
+			self.body_vel.angular.z=self.b.w_gb
 
-                self.body_vel.linear.x=self.b.v_gb
-                self.body_vel.angular.z=self.b.w_gb
+		elif self.r.oa: 
 
-		    elif self.r.oa: 
-
-			    print "|OBSTACLE AVOIDANCE|"
-			    self.body_vel.linear.x=self.b.v_oa
-			    self.body_vel.angular.z=self.b.w_oa
+			print "|OBSTACLE AVOIDANCE|"
+			self.body_vel.linear.x=self.b.v_oa
+			self.body_vel.angular.z=self.b.w_oa
         
-        	    rospy.loginfo(self.r.gb)
-                
-        	q = platform_control()
-        	q.body_vel = self.body_vel
-		    q.body_config=self.b.config
-		    q.body_config_speed=self.b.config_speed
+		rospy.loginfo(self.r.gb)
 
-        	self.pub_platform_control.publish(q)
+		q = platform_control()
+		q.body_vel = self.body_vel
+		q.body_config=self.b.config
+		q.body_config_speed=self.b.config_speed
+
+		self.pub_platform_control.publish(q)
 
 
     

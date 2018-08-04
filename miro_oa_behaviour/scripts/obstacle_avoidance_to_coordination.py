@@ -212,7 +212,7 @@ class miro_ros_client:
         self.active = False
 
         # topic root
-	self.robot_name = rospy.get_param('robot_name', 'sim01') # sim01 for simulation rob01 for real miro
+	self.robot_name = rospy.get_param('/robot_name', 'sim01') # sim01 for simulation rob01 for real miro
         topic_root = "/miro/" + self.robot_name
         print "topic_root", topic_root
 
