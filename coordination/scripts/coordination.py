@@ -3,7 +3,7 @@
 ################################################################
 
 import rospy
-from std_msgs.msg import String,Bool,Float32
+from std_msgs.msg import String,Bool,Float32, Int64
 from sensor_msgs.msg import Image,CompressedImage,Range,Imu
 from geometry_msgs.msg import Twist,Pose
 
@@ -69,110 +69,126 @@ from datetime import datetime
 
 class Releaser():
 
-    def __init__(self):
+	def __init__(self):
 
-        self.gb=True
-        self.oa=False
-        #self.smartwatch_state=False
+		self.gb=True
+		self.oa=False
+		#self.smartwatch_state=False
 
-        self.subSafety = rospy.Subscriber('/arrived',Bool,self.callbackSafety,queue_size=1)
-        self.subGoal = rospy.Subscriber('/new_obstacle',Bool,self.callbackGoal,queue_size=1)
-        #self.subSwState = rospy.Subscriber('/smartwatch_flag',Bool,self.callbackSwState,queue_size=1)
+		self.subSafety = rospy.Subscriber('/arrived',Bool,self.callbackSafety,queue_size=1)
+		self.subGoal = rospy.Subscriber('/new_obstacle',Bool,self.callbackGoal,queue_size=1)
+		#self.subSwState = rospy.Subscriber('/smartwatch_flag',Bool,self.callbackSwState,queue_size=1)
 
 
-    def callbackSafety(self,arrived): 
+	def callbackSafety(self,arrived): 
 
-        self.gb=arrived.data
-	self.oa=False
+		self.gb=arrived.data
+		self.oa=False
 
-    def callbackGoal(self,new_obstacle):
+	def callbackGoal(self,new_obstacle):
 
-        self.oa=new_obstacle.data
-	self.gb=False
+		self.oa=new_obstacle.data
+		self.gb=False
 
     #def callbackSwState(self, smartwatch):
 
     #self.smartwatch_state = smartwatch.data
 
+class Gain():
+
+	def __init__(self):
+
+		self.human_influence=0
+
+		self.sub_human_influence = rospy.Subscriber ( '/human_influence',Int64,self.callbackHumanInfluence,queue_size=1)
+	
+	def callbackHumanInfluence(self, influence):
+		
+		self.human_influence=influence.data
 
 class Behavior():
 
-    def __init__(self):
+	def __init__(self):
 
         
-        #Obstacle Avoidance Behavior
-        self.v_oa=0.0
-        self.w_oa=0.0
-        self.config=[0.0,0.0,0.0,0.0]
-        self.config_speed=[0.0,0.0,0.0,0.0]
-        #Gesture Based Behavior
-        self.v_gb=0.0
-        self.w_gb=0.0
+ #Obstacle Avoidance Behavior
+		self.v_oa=0.0
+		self.w_oa=0.0
+		self.config=[0.0,0.0,0.0,0.0]
+		self.config_speed=[0.0,0.0,0.0,0.0]
+#Gesture Based Behavior
+		self.v_gb=0.0
+		self.w_gb=0.0
 
       
-        self.subGBB = rospy.Subscriber('/gesture_based_behaviour',Twist, self.callbackGBB,queue_size=1)
-        self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',platform_control, self.callbackOAB,queue_size=1)
+		self.subGBB = rospy.Subscriber('/gesture_based_behaviour',Twist, self.callbackGBB,queue_size=1)
+		self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',platform_control, self.callbackOAB,queue_size=1)
         
 
-    def callbackGBB( self, twist_gb):
+	def callbackGBB( self, twist_gb):
     
-        self.v_gb=twist_gb.linear.x
-        self.w_gb=twist_gb.angular.z
+		self.v_gb=twist_gb.linear.x
+		self.w_gb=twist_gb.angular.z
+		self.config=[0.0,0.0,0.0,0.0]
+		self.config_speed=[0.0,0.0,0.0,0.0]
+		
 
     
-    def callbackOAB(self, twist_oa):
+	def callbackOAB(self, twist_oa):
         
-        self.v_oa=twist_oa.body_vel.linear.x 
-        self.w_oa=twist_oa.body_vel.angular.z
-        self.config=twist_oa.body_config
-        self.config_speed=twist_oa.body_config_speed
+		self.v_oa=twist_oa.body_vel.linear.x 
+		self.w_oa=twist_oa.body_vel.angular.z
+		self.config=twist_oa.body_config
+		self.config_speed=twist_oa.body_config_speed
 	
 
 class MultipleBehavior():
 
+	def __init__(self):
 
-    def __init__(self):
+		self.r = Releaser()
+		self.g = Gain()
+		self.b = Behavior()
+		self.flag = True 
 
-        self.r = Releaser()
-        self.b = Behavior()
-        self.flag = True 
-
-        #define Publisher
-        self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
-
-    def BehaviorCoordination (self):
-        
-        self.body_vel=Twist()
-
-	while not rospy.is_shutdown():
-
-
-		if self.r.gb:
-
-			print "|GESTURE BASED|"
-			self.body_vel.linear.x=self.b.v_gb
-			self.body_vel.angular.z=self.b.w_gb
-
-		elif self.r.oa: 
-
-			print "|OBSTACLE AVOIDANCE|"
-			self.body_vel.linear.x=self.b.v_oa
-			self.body_vel.angular.z=self.b.w_oa
-        
-		rospy.loginfo(self.r.gb)
-
-		q = platform_control()
-		q.body_vel = self.body_vel
-		q.body_config=self.b.config
-		q.body_config_speed=self.b.config_speed
-
-		self.pub_platform_control.publish(q)
-
-
+		#define Publisher
+		self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
+		self.pub_arrived_update = rospy.Publisher ('/arrived',Bool,queue_size=0)
     
-    """ def main (self):
+	def BehaviorCoordination (self):
         
-        rospy.spin() """
+		self.body_vel=Twist()
+		threshold = 12
+		G = self.g.human_influence * 0.1
+			
+
+		while not rospy.is_shutdown():
+		
+			if self.r.gb:
+
+				print "|GESTURE BASED|"
+				self.body_vel.linear.x=self.b.v_gb
+				self.body_vel.angular.z=self.b.w_gb
+
+			elif self.r.oa: 
+
+				print "|OBSTACLE AVOIDANCE|"
+				self.body_vel.linear.x=self.b.v_oa*(1-G)+(self.b.v_gb*G)
+				self.body_vel.angular.z=self.b.w_oa
+
+				if self.g.human_influence > threshold:
+					self.r.gb = True
+					self.pub_arrived_update.publish(self.r.gb)
+		
+					rospy.loginfo(self.r.gb)
+
+			q = platform_control()
+			q.body_vel = self.body_vel
+			q.body_config=self.b.config
+			q.body_config_speed=self.b.config_speed
+
+			self.pub_platform_control.publish(q)
+
         
 
 if __name__== '__main__':
