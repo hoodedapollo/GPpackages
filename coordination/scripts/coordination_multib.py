@@ -73,11 +73,11 @@ class Releaser():
 
         self.gb=True
         self.oa=False
-        #self.smartwatch_state=False
+        self.smartwatch_state=False
 
         self.subSafety = rospy.Subscriber('/arrived',Bool,self.callbackSafety,queue_size=1)
         self.subGoal = rospy.Subscriber('/new_obstacle',Bool,self.callbackGoal,queue_size=1)
-        #self.subSwState = rospy.Subscriber('/smartwatch_flag',Bool,self.callbackSwState,queue_size=1)
+        self.subSwState = rospy.Subscriber('/smartwatch_flag',Bool,self.callbackSwState,queue_size=1)
 
 
     def callbackSafety(self,arrived): 
@@ -90,16 +90,43 @@ class Releaser():
         self.oa=new_obstacle.data
 	    self.gb=False
 
-    #def callbackSwState(self, smartwatch):
+    def callbackSwState(self, smartwatch):
 
-    #self.smartwatch_state = smartwatch.data
+        self.smartwatch_state = smartwatch.data
+
+class Gain():
+
+    def __init__(self):
+
+        self.h_influence=0.0
+        self.m_emotion=0.0
+
+        self.subHumanInfluence = rospy.Subscriber('/human_influence',Float32, self.callbackInfluence,queue_size=1)
+        self.subEmotion = rospy.Subscriber('/EmotionalState',Float32, self.callbackEmotion,queue_size=1)
+
+
+    def callbackEmotion(self, emotion):
+
+        self.m_emotion = emotion
+
+    def callbackInfluence(self, human_weight):
+        
+        self.h_influence=human_weight
 
 
 class Behavior():
 
     def __init__(self):
 
+        #Emotional Behaviour
+        self.lights = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        self.ears = [0.0,0.0]
+        self.tail = 0.0
+        self.eyes = 0.0
         
+        #Obstacle Safety Behavior
+        self.v_os=0.0
+        self.w_os=0.0
         #Obstacle Avoidance Behavior
         self.v_oa=0.0
         self.w_oa=0.0
@@ -109,9 +136,25 @@ class Behavior():
         self.v_gb=0.0
         self.w_gb=0.0
 
-      
+        self.subEB = rospy.Subscriber ( '/emotional_behaviour',platform_control,self.callbackEB,queue_size=1)
+        self.subOSB = rospy.Subscriber('/obstacle_safety_behaviour',Twist, self.callbackOSB,queue_size=1)
         self.subGBB = rospy.Subscriber('/gesture_based_behaviour',Twist, self.callbackGBB,queue_size=1)
         self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',platform_control, self.callbackOAB,queue_size=1)
+
+    def callbackEB ( self, emotional_reaction)
+
+        self.lights = emotional_reaction.lights_raw
+        self.ears = emotional_reaction.ear_rotate
+        self.tail = emotional_reaction.tail
+        self.eyes = emotional_reaction.eyelid_closure
+
+	
+
+
+    def callbackOSB(self,twist_os): 
+
+        self.v_os=twist_os.linear.x #twist_os[0]
+        self.w_os=twist_os.angular.z #twist_os[1]
         
 
     def callbackGBB( self, twist_gb):
@@ -141,26 +184,44 @@ class MultipleBehavior():
         self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
 
     def BehaviorCoordination (self):
+        ##TO DO:
+        # add the cosmetic dof to zero in the other behaviours
+        # add the human influence and check topics for the emotional state and everything
+        # publish the new flag arrived = true when the gain exceed the threshold
         
         self.body_vel=Twist()
 
 	    while not rospy.is_shutdown():
 
+            if self.smartwatch_state = True
 
-		    if self.r.gb:
+                if self.r.gb:
 
-			    print "|GESTURE BASED|"
+                    print "|GESTURE BASED|"
 
-                self.body_vel.linear.x=self.b.v_gb
-                self.body_vel.angular.z=self.b.w_gb
+                    self.body_vel.linear.x=self.b.v_gb
+                    self.body_vel.angular.z=self.b.w_gb
 
-		    elif self.r.oa: 
+                elif self.r.oa: 
 
-			    print "|OBSTACLE AVOIDANCE|"
-			    self.body_vel.linear.x=self.b.v_oa
-			    self.body_vel.angular.z=self.b.w_oa
-        
-        	    rospy.loginfo(self.r.gb)
+                    print "|OBSTACLE AVOIDANCE|"
+                    self.body_vel.linear.x=self.b.v_oa
+                    self.body_vel.angular.z=self.b.w_oa
+            
+                    rospy.loginfo(self.r.gb)
+
+            if self.smartwatch_state = False
+
+                if obstacle # to check the flag for safety
+
+                    print "|OBSTACLE SAFETY|"
+
+                    self.body_vel.linear.x=b.v_os
+                    self.body_vel.angular.z=b.w_os
+
+                else:
+
+                    print "|EMOTIONAL|"
                 
         	q = platform_control()
         	q.body_vel = self.body_vel

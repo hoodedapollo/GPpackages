@@ -22,43 +22,13 @@ import sys
 
 ################################################################
 
-def usage():
-    print """
-Usage:
-    odometry_publisher2.py robot=<robot_name>
-
-    Without arguments, this help page is displayed. To run the
-    client you must specify at least the option "robot".
-
-Options:
-    robot=<robot_name>
-        specify the name of the miro robot to connect to,
-        which forms the ros base topic "/miro/<robot_name>".
-        there is no default, this argument must be specified.
-    """
-    sys.exit(0)
-
-################################################################
-
 class OdometryEvaluator:
 
     def callback_miro_vel(self,object):
-        self.v = object.odometry.twist.twist.linear.x
-        self.w = object.odometry.twist.twist.angular.z
+            self.v = object.odometry.twist.twist.linear.x
+            self.w = object.odometry.twist.twist.angular.z
 
-    def callback_new_obstacle(self, object):
-        self.flag = object.data
-
-    def loop(self):
-#        rate = rospy.Rate(50.0)	
-        while not rospy.is_shutdown():
-
-            if self.new_obstacle:
-                    self.x = 0
-                    self.y = 0
-                    self.th = 0
-                    self.new_obstacle = False
-
+	
             self.current_time = rospy.Time.now()
                 
             #compute odometry of a 2,0 robot given the linear and angular velocities
@@ -99,6 +69,26 @@ class OdometryEvaluator:
 
             self.last_time = self.current_time;
 
+
+    def callback_new_obstacle(self, object):
+            self.new_obstacle = object.data
+
+            if self.new_obstacle:
+                    self.x = 0
+                    self.y = 0
+                    self.th = 0
+                    self.new_obstacle = False # avoid to init multiple times due to bad message synch
+
+		    # as a precaution reinitialize also the velocities
+	            self.w = 0
+		    self.v = 0
+
+    def loop(self):
+#        rate = rospy.Rate(50.0)	
+        while not rospy.is_shutdown():
+		rospy.spin()
+
+
 #            rate.sleep();
 
     def __init__(self):
@@ -107,33 +97,8 @@ class OdometryEvaluator:
         print("initialising...")
         print(sys.version)
 
-        # no arguments gives usage
-        if len(sys.argv) == 1:
-            usage()
-
-        # options
-        self.robot_name = ""
-        self.drive_pattern = ""
-
-        # handle args
-        for arg in sys.argv[1:]:
-            f = arg.find('=')
-            if f == -1:
-                key = arg
-                val = ""
-            else:
-                key = arg[:f]
-                val = arg[f+1:]
-            if key == "robot":
-                self.robot_name = val
-            else:
-                error("argument not recognised \"" + arg + "\"")
-
-        # check we got at least one
-        if len(self.robot_name) == 0:
-            error("argument \"robot\" must be specified")
-
 	# topic root
+	self.robot_name = rospy.get_param('robot_name') # sim01 for simulation rob01 for real miro
         topic_root = "/miro/" + self.robot_name
         print "topic_root", topic_root
 
