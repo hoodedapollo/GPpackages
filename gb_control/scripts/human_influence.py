@@ -43,7 +43,7 @@ class HumanIntention():
 
         self.g=GestureEvaluation()
         self.obstacle=False
-        self.arrived=False
+        self.arrived=True
         self.lastyaw=False
         self.influence_counter=0
         self.human_influence=0
@@ -53,16 +53,16 @@ class HumanIntention():
         self.subSmartwatcharrived = rospy.Subscriber('/arrived',Bool,self.callbackArrived,queue_size=1)
         self.pub_human_influence = rospy.Publisher ( '/human_influence',Int64,queue_size=0)
         self.HumanTendencyEvaluation()
-        
-        
-    
+
+
+
     def callbackNewObstacle ( self, new_obstacle):
 
         self.obstacle=new_obstacle.data
         self.arrived = False
 
     def callbackArrived ( self, goal):
-        
+
         self.arrived=goal.data
         self.obstacle=False
 
@@ -76,13 +76,15 @@ class HumanIntention():
                 self.lastyaw=True
 
             else:
-                
+
                 if self.lastyaw:
 
                     self.influence_counter=self.influence_counter+1
 
                     self.lastyaw=False
-    
+
+                    rospy.loginfo("counting.......")
+
 
         if not self.obstacle:
 
@@ -90,23 +92,25 @@ class HumanIntention():
 
                 #keeps into account how many times the human tries to escape the obstacle avoidance behaviour
                 self.human_habit_gain=self.human_habit_gain+1
-            
+
             self.influence_counter=0
 
-            
+
         self.human_influence=self.human_habit_gain*self.influence_counter
-        
+
         self.pub_human_influence.publish(self.human_influence)
+
+        rospy.loginfo("influence counter: %s, human habit gain: %s, arrived: %s, obstacle: %s, gyro vel: %s", self.influence_counter, self.human_habit_gain , self.arrived, self.obstacle, self.g.gesture )
 
 if __name__== '__main__':
 
     rospy.init_node('human_influence') 
     hi = HumanIntention()
-    
+
     while not rospy.is_shutdown():
 
         hi.HumanTendencyEvaluation()
-        
+
     #mb.main()
 
 
@@ -119,4 +123,4 @@ if __name__== '__main__':
 
 
 
-    
+
