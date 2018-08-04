@@ -47,7 +47,7 @@ class HumanIntention():
         self.lastyaw=False
         self.influence_counter=0
         self.human_influence=0
-        self.human_habit_gain=0
+        self.human_habit_gain=1
 
         self.subSmartwatchobstacle = rospy.Subscriber('/new_obstacle',Bool,self.callbackNewObstacle,queue_size=1)
         self.subSmartwatcharrived = rospy.Subscriber('/arrived',Bool,self.callbackArrived,queue_size=1)

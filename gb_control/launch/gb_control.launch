@@ -17,8 +17,4 @@
 
 <!--	 <node name="human_influence" pkg="gb_control" type="human_influence.py" /> -->
 
-<!-- RQT PLOT ROBOT POSITION FROM ODOMETRY -->
-    <node name="rqt_plot_angles" pkg="rqt_plot" type="rqt_plot"
-    args="/rpy_deg" />
-
 </launch>

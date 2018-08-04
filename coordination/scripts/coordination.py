@@ -129,8 +129,6 @@ class Behavior():
     
 		self.v_gb=twist_gb.linear.x
 		self.w_gb=twist_gb.angular.z
-		self.config=[0.0,0.0,0.0,0.0]
-		self.config_speed=[0.0,0.0,0.0,0.0]
 		
 
     
@@ -161,6 +159,7 @@ class MultipleBehavior():
 		threshold = 12
 		G = self.g.human_influence * 0.1
 			
+		q = platform_control()
 
 		while not rospy.is_shutdown():
 		
@@ -177,12 +176,22 @@ class MultipleBehavior():
 				self.body_vel.angular.z=self.b.w_oa
 
 				if self.g.human_influence > threshold:
-					self.r.gb = True
-					self.pub_arrived_update.publish(self.r.gb)
-		
-					rospy.loginfo(self.r.gb)
+				        self.body_vel.linear.x=0.0
+				        self.body_vel.angular.z=0.0                                       
 
-			q = platform_control()
+                                        self.b.config=[0.0,0.0,0.0,0.0]
+                                        self.b.config_speed=[0.0,0.0,-1,0.0]
+
+                                        q.body_vel = self.body_vel
+                                        q.body_config=self.b.config
+                                        q.body_config_speed=self.b.config_speed
+
+                                        self.pub_platform_control.publish(q)
+                                        
+                                        rospy.sleep(3)
+					self.pub_arrived_update.publish(True)
+#					self.r.gb = True
+
 			q.body_vel = self.body_vel
 			q.body_config=self.b.config
 			q.body_config_speed=self.b.config_speed
