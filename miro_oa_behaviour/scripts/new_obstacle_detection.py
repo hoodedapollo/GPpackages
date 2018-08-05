@@ -20,7 +20,7 @@ class NewObstacleDetecor:
         self.arrived = object.data
 
     def loop(self):
-#	rate = rospy.Rate(1)
+	r = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
 
 		# when arrived is set to true by the oa node the robot must be safe 
@@ -36,7 +36,7 @@ class NewObstacleDetecor:
 			print "new obstacle", self.new_obstacle
                         self.new_obstacle = False
                         self.obstacle_avoidance = True
-#	        rate.sleep()
+	        r.sleep()
 
 
     def __init__(self):   
@@ -46,6 +46,9 @@ class NewObstacleDetecor:
         self.arrived = True 
         self.obstacle_avoidance = False
         self.same_obstacle_counter = 0
+
+        #node rate
+        self.rate = rospy.get_param('rate')
         
         # subscribers
         rospy.Subscriber('/safe', Bool, self.callback_safe, queue_size = 1)

@@ -6,6 +6,9 @@
 <!-- Choose if you want to use a simulated robot (sim01) in gazebo or the real miro (rob01) -->
     <param name="/robot_name" value="sim01" />
 
+<!-- NODE RATE -->
+    <param name="rate" value="200" />
+
 <!-- MIRO GAZEBO_ROS -->
 <!-- if the simulated robot sim01 has benn chosen, launch gazebo simulation with miro
  and enough space to manouver -->  
@@ -19,6 +22,6 @@
     <include file="$(find miro_oa_behaviour)/launch/obstacle_avoidance_to_coordination.launch" />
 
 <!-- COORDINATION-->
-    <node name="coordination" pkg="coordination" type="coordination.py"/> 
+    <node name="coordination" pkg="coordination" type="coordination.py" output="screen" /> 
 
 </launch>

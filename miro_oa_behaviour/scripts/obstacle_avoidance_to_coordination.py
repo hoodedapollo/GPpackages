@@ -80,11 +80,13 @@ class miro_ros_client:
 	roll, pitch, yaw = tf.transformations.euler_from_quaternion(explicit_quat)
         self.th = yaw       
 
-    def loop(self):
-        while not rospy.is_shutdown():
+    def callback_escape(self,object):
+        self.new_obstacle = False
 
-		# send downstream command, ignoring upstream data
-		q = platform_control()
+    def loop(self):
+        r = rospy.Rate(self.rate)
+	q = platform_control()
+        while not rospy.is_shutdown():
 
 		if self.drive_pattern == "Pcontroller":
 			d_ref = 0.5
@@ -105,32 +107,39 @@ class miro_ros_client:
 
 		elif self.drive_pattern == "obstacle_avoidance":
 			# the robot circumnavigates the new obstacle clockwise until it reaches the m-line
-			if self.new_obstacle:
+			while self.new_obstacle:
+
+                                #stop the robot (reinitialize the velocities from previous runs)
+                                self.body_vel.linear.x = 0
+                                self.body_vel.angular.z = 0
 
 				#rotate head to the right
 				self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
 				self.body_config = [0,0,-1.04,0] #yaw rotation 
 				
 				# publish
+                                q.body_vel = self.body_vel
 				q.body_config_speed = self.body_config_speed
 				q.body_config = self.body_config
 				self.pub_platform_control.publish(q)
 				
 				#rotate 90 deg to the left
-				while abs(abs(self.th) - 1.5708) > self.th_threshold_first_rotation and not rospy.is_shutdown():
+				while abs(abs(self.th) - 1.5708) > self.th_threshold_first_rotation and self.new_obstacle and not rospy.is_shutdown():
 					self.body_vel.linear.x = 0
 					self.body_vel.angular.z = self.K_first_rotation * abs(abs(self.th) - 1.5708) # rad/s positive rotation to the left
 					
 					# publish
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
+
+                                        r.sleep()
 				
 #				rospy.sleep(5) #debug purposes	
 					
 				# go around the obstacle simple proportionaol controller until m-line is met (y axis)
 				# x_threshold is needed to avoid the robot thinks he is arrived when it is around the 
 				# the initial position: y = 0, x = 0
-				while (self.x < self.x_threshold or self.y > self.y_threshold) and not rospy.is_shutdown():
+				while (self.x < self.x_threshold or self.y > self.y_threshold) and self.new_obstacle and not rospy.is_shutdown():
 					# control action definition:
 					# wall on the right if d_sonar < d_ref --> e > 0 --> Kp > 0 since w > 0 turns left 
 					# and moves away from the wall on the right
@@ -143,6 +152,8 @@ class miro_ros_client:
 					# publish
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
+
+                                        r.sleep()
 
 				#rotate head to look forward
 				self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
@@ -157,13 +168,15 @@ class miro_ros_client:
 				
 				#rotate to the left until the robot does not see the obstacle anymore
 				# do not tell the robot to re-orient as zero theta since it may hit the obstacle with the tail
-				while abs(self.th) > 0.05 and not rospy.is_shutdown():
+				while abs(self.th) > 0.05 and self.new_obstacle and not rospy.is_shutdown():
 					self.body_vel.linear.x = 0
 					self.body_vel.angular.z = abs(self.th) # rad/s
 					
 					# publish
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
+
+                                        r.sleep()
 					
 				#publish True on /arrived topics once when the avoidance is complete
 				self.pub_arrived.publish(True) 
@@ -171,6 +184,8 @@ class miro_ros_client:
 				# once the obstacle avoidance is complete reset the new_obstacle flag waiting for 
 				# the relative callback to update it 
 				self.new_obstacle = False
+        
+        r.sleep()
 
     def __init__(self):
         
@@ -194,6 +209,9 @@ class miro_ros_client:
 	self.x = 0
 	self.y = 0
 	self.th = 0
+
+        #node rate
+        self.rate = rospy.get_param('rate')
 	
 	# first rotation control parameters
 	self.th_threshold_first_rotation = rospy.get_param('~th_threshold_first_rotation')
@@ -235,6 +253,7 @@ class miro_ros_client:
 	self.sub_new_obstacle = rospy.Subscriber("/new_obstacle", Bool, self.callback_new_obstacle)
 
 	self.sub_odometry = rospy.Subscriber("/odom", Odometry, self.callback_odometry)
+        self.sub_escape = rospy.Subscriber("/escape", Bool, self.callback_escape)
 
         # set active
         self.active = True

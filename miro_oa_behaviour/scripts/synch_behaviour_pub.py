@@ -34,7 +34,7 @@ class SynchOaBehaviour():
 
     def loop(self):
         
-#        r = rospy.Rate(10)
+        r = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
 
             if self.obstacle_avoidance:
@@ -42,12 +42,15 @@ class SynchOaBehaviour():
 
             else:
                 self.pub_synch_oa_flag.publish(False)
-#            r.sleep()
+            r.sleep()
 
     def __init__(self):
 
         #attribute init
         self.obstacle_avoidance=False
+
+        #node rate
+        self.rate = rospy.get_param('rate')
 
         #subscribe
         self.sub_new_obstacle = rospy.Subscriber('/new_obstacle',Bool,self.callback_new_obstacle, queue_size=1)
