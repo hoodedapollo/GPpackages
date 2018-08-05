@@ -40,7 +40,8 @@ In order to succesfully run the code, you should have installed [paho-mqtt](http
 The suggested MQTT Broker is [Mosquitto](https://mosquitto.org/documentation/). In order to install Mosquitto on Ubuntu follow [this guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-the-mosquitto-mqtt-messaging-broker-on-ubuntu-16-04).
 
 ### MiRo Workstation Setup
-Download the [Miro Developer kit](http://labs.consequentialrobotics.com/miro/mdk/)
+Download the [Miro Developer kit](http://labs.consequentialrobotics.com/miro/mdk/).
+
 Follow the instructions from Consequential Robotics [Miro: Prepare Workstation](https://consequential.bitbucket.io/Developer_Preparation_Prepare_workstation.html) to set up your workstation to work with miro. 
 Strictly follow the instructions in the Install MDK section as the following steps will rely on this.
 
@@ -65,8 +66,6 @@ $ cd catkin_ws && catkin_make
 $ cd src && git clone https://github.com/hoodedapollo/GPpackages.git
 $ cd .. && source devel/setup.bash
 ```
-From now on we will assume that your catkin workspace is called catkin_ws.  
-
 ### Run the project
 
 mosquitto must be running on your PC for the birdge to work 
@@ -108,7 +107,7 @@ This section gives an insight on the different parts that compose the overall sy
 
 #### Gazebo Enviroment Setup
 
-To open gazebo with a model of miro named sim01 and enough free space to manouver 
+To open gazebo with a model of miro named sim01 and enough free space to manouver run 
 
 ```
 $ roslaunch miro_gazebo_ros miro_gazebo_ros.launch
@@ -116,19 +115,19 @@ $ roslaunch miro_gazebo_ros miro_gazebo_ros.launch
 
 #### Enable Gesture Based Control Alone
 
-To enable the gesture based smartwatch control alone 
+To enable the gesture based smartwatch control alone run
 
 ```
 $ roslaunch gb_control gb_control_to_miro.launch
 ```
 
-main parameters in the launch file:
+Set this parameters in the launch file:
 * robot_name 
-    * sim01
-    * rob01
+    * sim01: if you want to control the miro in the simulated enviroment at the previous step
+    * rob01: if you want to control the real Miro Robot
 * gb_control_type
-    * attitude
-    * linear
+    * attitude: control based on a complemetary filer of the imu data
+    * linear: control based directly on imu data
 
 At this point you should be able to control Miro with your smartwatch
 
@@ -139,28 +138,19 @@ To enable only the obstacle avoidance behaviour run
 $ roslaunch miro_oa_behaviour obstacle_avoidance_to_miro.launch
 ```
 
-main parameters in the launch file:
+set this parameter in the launch file:
 * robot_name 
     * sim01
     * rob01
+* control parameters
+
+This is helpful for tuning the pid for the real miro.
 
 #### Coordination
 
-To run the overall architecture  you do not publish command directly to miro as in the above
-sections but you provide them to the cordiation node.
+To run the overall architecture commands are not published directly to miro as in the above
+sections but they are provided to the cordiation node.
 This is what the oa_gb_simple_coordination.launch file does.
-
-### Parameters Explanation
-
-Explanation of most of the parameters you will encounter in the launch files
-
-* robot_name 
-    * sim01 is the name of the simulated robot in gazebo
-    * rob01 is the name of the real miro
-
-* control parameters for obstacle avoidance
-
-* rate:is the rate at which the nodes which use this parametr run
 
 ## Acknowledgments
 
