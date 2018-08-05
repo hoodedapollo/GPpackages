@@ -65,23 +65,48 @@ Make sure that the IP in the IMU_stream app on the  smartphone is correct
 
 Open the IMU_stream app on smartwatch 
 
-Now based on what you want to do there are different possibilities:
-* choose wheter to run a simulation of miro or o use the real robot
-* choose wheter to guide Miro with the smartwatch alone or with obstacle avoidance and human influence 
 
-In order to simplify the task of setting up the whole enviroment.launch files are available as  described in the following sections
+
+Now put on the smartwatch and run
+
+```
+roslaunch coordination oa_gb_simple_coordination.launch
+```
+
+A gazebo enviroment as the one in the picture will show up and rviz visualizer will show the odometry data.
+Now you should be able to control miro with your smartwatch
+
+Add as many obstacle as you like and see how miro behaves ;)
+
+### Architecture Breakdown
+
+This project is composed of different parts.
+
+The command 
+
+```
+roslaunch coordination oa_gb_simple_coordination.launch
+```
+
+is responsible to run all the different parts in one shot, but you can also run them separately.
+This section gives an insight on the different parts tha compose the overall system
+* Gazebo Enviroment Setup
+* Gesture Based Control
+* Obstacle Avoidance Behaviour
+* Coordination
 
 #### Gazebo Enviroment Setup
 
-This step is required only if you want to use a simulated MiRo robot.
+To open gazebo with a model of miro named sim01 and enough free space to manouver 
 
-To open gazebo with a model of miro named sim01 (robot_name parameter) and enough free space to manouver 
 ```
 roslaunch miro_gazebo_ros miro_gazebo_ros.launch
 ```
 
-#### Enable Gesture Based Control  
+#### Enable Gesture Based Control Alone
+
 To enable the gesture based smartwatch control alone 
+
 ```
 roslaunch gb_control gb_control_to_miro.launch
 ```
@@ -96,81 +121,35 @@ main parameters in the launch file:
 
 At this point you should be able to control Miro with your smartwatch
 
-Instead if you want to enable the gesture based smartwatch control compatible with the obstacle avoidance behaviour you should run
+#### Enable Obstacle Avoidance alone
 
+To enable only the obstacle avoidance behaviour run
 ```
-roslaunch gb_control gb_control_to_coordination.launch
-```
-
-
-#### Enable Autnomous Obstacle Avoidance Behaviour
-If in the previous step you chose the second command now run
-
-```
-roslaunch miro_oa_behaviour obstacle_avoidance_to_coordination.launch
+roslaunch miro_oa_behaviour obstacle_avoidance_to_miro.launch
 ```
 
-parameters in the launch file:
+main parameters in the launch file:
 * robot_name 
     * sim01
     * rob01
-At this point miro will follow your instructions and will try to avoid obstacles autonomously provided that you will otherwise ;)
+
+#### Coordination
+
+To run the overall architecture now you do not publish command directly to miro as in the above
+sections but you provide them to the cordiation node.
+This is what the oa_gb_simple_coordination.launch file does.
 
 ### Parameters Explanation
+
+Explanation of most of the parameters you will encounter in the launch files
+
 * robot_name 
     * sim01 is the name of the simulated robot in gazebo
     * rob01 is the name of the real miro
 
+* control parameters for onstacle avoidance
 
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
+* rate:is the rate at which the nodes which use this parametr run
 
 ## Built With
 
