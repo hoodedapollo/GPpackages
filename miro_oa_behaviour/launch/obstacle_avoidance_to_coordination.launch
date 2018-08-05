@@ -1,6 +1,7 @@
 <launch>
 <!-- ROBOT NAME --> 
     <param name="/robot_name" value="sim01" />
+    <param name="rate" value="200" />
 
 <!-- OBSTACLE BEHAVIOUR NODES --> 
 
@@ -24,6 +25,9 @@
       <param name="K_wall_following" value="1" />
       <param name="v_wall_following" value="100" />
     </node>
+
+    <!-- SYNCHRONOUS OA BEHAVIOUR FLAG PUBLISHER -->
+    <node name="synch_behaviour_pub" pkg="miro_oa_behaviour" type="synch_behaviour_pub.py" />
 
 <!-- RVIZ VISUALIZATION -->
     <node name="rviz" pkg="rviz" type="rviz" 

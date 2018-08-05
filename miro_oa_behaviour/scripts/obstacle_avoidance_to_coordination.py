@@ -81,6 +81,7 @@ class miro_ros_client:
         self.th = yaw       
 
     def loop(self):
+        r = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
 
 		# send downstream command, ignoring upstream data
@@ -124,6 +125,8 @@ class miro_ros_client:
 					# publish
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
+
+                                        r.sleep()
 				
 #				rospy.sleep(5) #debug purposes	
 					
@@ -143,6 +146,8 @@ class miro_ros_client:
 					# publish
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
+
+                                        r.sleep()
 
 				#rotate head to look forward
 				self.body_config_speed = [0,0,-1,0] # maximum spped to yaw rotation
@@ -164,6 +169,8 @@ class miro_ros_client:
 					# publish
 					q.body_vel = self.body_vel
 					self.pub_platform_control.publish(q)
+
+                                        r.sleep()
 					
 				#publish True on /arrived topics once when the avoidance is complete
 				self.pub_arrived.publish(True) 
@@ -171,6 +178,8 @@ class miro_ros_client:
 				# once the obstacle avoidance is complete reset the new_obstacle flag waiting for 
 				# the relative callback to update it 
 				self.new_obstacle = False
+        
+        r.sleep()
 
     def __init__(self):
         
@@ -194,6 +203,9 @@ class miro_ros_client:
 	self.x = 0
 	self.y = 0
 	self.th = 0
+
+        #node rate
+        self.rate = rospy.get_param('rate')
 	
 	# first rotation control parameters
 	self.th_threshold_first_rotation = rospy.get_param('~th_threshold_first_rotation')
