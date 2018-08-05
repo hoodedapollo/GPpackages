@@ -24,25 +24,37 @@ This problem is composed of multiple aspects:
 
 ## Getting Started
 
-### Prerequisites 
+### ROS
+This project is developed using [ROS](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
-You must have a smartwatch paired with a smartphone which is the bridge between the smartwatch and the ros master running on your computer.
-Follow the instructions reported in this repository (link to carfi repo)
+### Smartwatch and Smartphone set up
+In order to publish imu data from your smartwatch to ROS nodes you must have a smartwatch paired with a smartphone.
+The smartphone acts as the bridge between the smartwatch and the ros master running on your computer.
 
-Follow the instructions at consequential robotics to set up your workstation to work with miro. Especially use the mdk link as sugested.
+Follow the instructions reported in [imu_stream](https://github.com/EmaroLab/imu_stream) to download the app for both the smartphone and the smartwatch.
 
-Since we will use the gazebo_ros package to run the gazebo simulation instead of the script file provided by consequential robotics(gazebo services for debug and better comunication synch) 
-add this two line to the .bashrc file to make available to gazebo the models and the plugins neede to
-properly set up a miro .world
+### MQTT ROS Bridge
+
+In order to succesfully run the code, you should have installed [paho-mqtt](https://pypi.python.org/pypi/paho-mqtt/1.1) 
+
+The suggested MQTT Broker is [Mosquitto](https://mosquitto.org/documentation/). In order to install Mosquitto on Ubuntu follow [this guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-the-mosquitto-mqtt-messaging-broker-on-ubuntu-16-04).
+
+### MiRo Workstation Setup
+Download the [Miro Developer kit](http://labs.consequentialrobotics.com/miro/mdk/)
+Follow the instructions from Consequential Robotics [Miro: Prepare Workstation](https://consequential.bitbucket.io/Developer_Preparation_Prepare_workstation.html) to set up your workstation to work with miro. 
+Strictly follow the instructions in the Install MDK section as the following steps will rely on this.
+
+We use the gazebo_ros package to run the gazebo simulation, instead of the script file provided by consequential robotics.  
+For this reason add this two line to the .bashrc file. This makes available to gazebo the models and the plugins provided by the Miro Developer Kit
+
+```
 export GAZEBO_MODEL_PATH=/home/user/mdk/sim/gazebo/models:${GAZEBO_MODEL_PATH}
 export GAZEBO_PLUGIN_PATH=/home/user/mdk/bin/deb64:${GAZEBO_PLUGIN_PATH}
+```
 
-change user with your user name and deb64 with your distribution between those available under the mdk/bin directory
-
+change user with your user name and deb64 with your distribution from those available under the mdk/bin directory
 
 ### ROS enviroment setup
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
 This repository contains all the packages needed to run the project in simulation as well as with a real Miro.
 
 Create a catkin workspace and clone all the packages in the src folder
@@ -50,7 +62,7 @@ Create a catkin workspace and clone all the packages in the src folder
 ```
 $ mkdir -p catkin_ws/src
 $ cd catkin_ws && catkin_make
-$ cd src && git clone this repo
+$ cd src && git clone https://github.com/hoodedapollo/GPpackages.git
 $ cd .. && source devel/setup.bash
 ```
 From now on we will assume that your catkin workspace is called catkin_ws.  
@@ -65,18 +77,16 @@ Make sure that the IP in the IMU_stream app on the  smartphone is correct
 
 Open the IMU_stream app on smartwatch 
 
-
-
-Now put on the smartwatch and run
+The following command will start the project
 
 ```
-roslaunch coordination oa_gb_simple_coordination.launch
+$ roslaunch coordination oa_gb_simple_coordination.launch
 ```
 
-A gazebo enviroment as the one in the picture will show up and rviz visualizer will show the odometry data.
-Now you should be able to control miro with your smartwatch
+A gazebo enviroment will show up and rviz visualizer will show the odometry data.
+Now you should be able to control miro with your smartwatch.
 
-Add as many obstacle as you like and see how miro behaves ;)
+Add as many obstacle as you like and see how miro behaves
 
 ### Architecture Breakdown
 
@@ -85,11 +95,12 @@ This project is composed of different parts.
 The command 
 
 ```
-roslaunch coordination oa_gb_simple_coordination.launch
+$ roslaunch coordination oa_gb_simple_coordination.launch
 ```
 
 is responsible to run all the different parts in one shot, but you can also run them separately.
-This section gives an insight on the different parts tha compose the overall system
+
+This section gives an insight on the different parts that compose the overall system
 * Gazebo Enviroment Setup
 * Gesture Based Control
 * Obstacle Avoidance Behaviour
@@ -100,7 +111,7 @@ This section gives an insight on the different parts tha compose the overall sys
 To open gazebo with a model of miro named sim01 and enough free space to manouver 
 
 ```
-roslaunch miro_gazebo_ros miro_gazebo_ros.launch
+$ roslaunch miro_gazebo_ros miro_gazebo_ros.launch
 ```
 
 #### Enable Gesture Based Control Alone
@@ -108,7 +119,7 @@ roslaunch miro_gazebo_ros miro_gazebo_ros.launch
 To enable the gesture based smartwatch control alone 
 
 ```
-roslaunch gb_control gb_control_to_miro.launch
+$ roslaunch gb_control gb_control_to_miro.launch
 ```
 
 main parameters in the launch file:
@@ -125,7 +136,7 @@ At this point you should be able to control Miro with your smartwatch
 
 To enable only the obstacle avoidance behaviour run
 ```
-roslaunch miro_oa_behaviour obstacle_avoidance_to_miro.launch
+$ roslaunch miro_oa_behaviour obstacle_avoidance_to_miro.launch
 ```
 
 main parameters in the launch file:
@@ -135,7 +146,7 @@ main parameters in the launch file:
 
 #### Coordination
 
-To run the overall architecture now you do not publish command directly to miro as in the above
+To run the overall architecture  you do not publish command directly to miro as in the above
 sections but you provide them to the cordiation node.
 This is what the oa_gb_simple_coordination.launch file does.
 
@@ -147,37 +158,14 @@ Explanation of most of the parameters you will encounter in the launch files
     * sim01 is the name of the simulated robot in gazebo
     * rob01 is the name of the real miro
 
-* control parameters for onstacle avoidance
+* control parameters for obstacle avoidance
 
 * rate:is the rate at which the nodes which use this parametr run
 
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* [mqtt_ros_bridge](https://github.com/EmaroLab/mqtt_ros_bridge) 
+* [imu_stream](https://github.com/EmaroLab/imu_stream)
+* [imu_complementary_filter](http://wiki.ros.org/imu_complementary_filter)
+
 
