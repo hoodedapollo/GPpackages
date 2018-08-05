@@ -35,7 +35,7 @@ Follow the instructions reported in [imu_stream](https://github.com/EmaroLab/imu
 
 ### MQTT ROS Bridge
 
-In order to succesfully run the code, you should have installed [paho-mqtt](https://pypi.python.org/pypi/paho-mqtt/1.1) 
+In order to succesfully run the code, you should have installed [paho-mqtt](https://pypi.python.org/pypi/paho-mqtt/1.1): clone the repository and install paho-mqtt from it. 
 
 The suggested MQTT Broker is [Mosquitto](https://mosquitto.org/documentation/). In order to install Mosquitto on Ubuntu follow [this guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-the-mosquitto-mqtt-messaging-broker-on-ubuntu-16-04).
 
