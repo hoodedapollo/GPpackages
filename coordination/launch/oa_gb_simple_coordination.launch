@@ -6,6 +6,9 @@
 <!-- Choose if you want to use a simulated robot (sim01) in gazebo or the real miro (rob01) -->
     <param name="/robot_name" value="sim01" />
 
+<!-- NODE RATE -->
+    <param name="rate" value="200" />
+
 <!-- MIRO GAZEBO_ROS -->
 <!-- if the simulated robot sim01 has benn chosen, launch gazebo simulation with miro
  and enough space to manouver -->  

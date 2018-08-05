@@ -35,6 +35,9 @@ class GestureBasedBehaviour():
 		self.last_acc = [0,0,0]
 		self.rpy = [0,0,0]
 
+        #node rate
+                self.rate = rospy.get_param('rate')
+
 	#Parameter to set in the launch file to switch from the direct control ( linear acceleration ) to the attitude control ( roll pitch yaw )
 		self.switch=rospy.get_param('~gb_control_type')
 		
@@ -101,13 +104,14 @@ class GestureBasedBehaviour():
 
 	#Switching between the two possible control based on the variable on the launch file
 	def loop(self):
-	
+	        r = rospy.Rate(self.rate)
 		while not rospy.is_shutdown():
 
 			if self.switch == 'linear':
 				self.pub_gesture_control.publish(self.body_vel)
 			if self.switch == 'attitude':
 				self.pub_gesture_control.publish(self.sw_vel)
+                        r.sleep()
 
     
 

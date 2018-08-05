@@ -71,24 +71,16 @@ class Releaser():
 
 	def __init__(self):
 
-		self.gb=True
-		self.oa=False
+	    
+		self.obstacle_avoidance=False
 		#self.smartwatch_state=False
-
-		self.subSafety = rospy.Subscriber('/arrived',Bool,self.callbackSafety,queue_size=1)
-		self.subGoal = rospy.Subscriber('/new_obstacle',Bool,self.callbackGoal,queue_size=1)
+		self.subObstacleAvoidance = rospy.Subscriber('/synch_oa_flag',Bool,self.callbackObstacleAvoidance,queue_size=1)
 		#self.subSwState = rospy.Subscriber('/smartwatch_flag',Bool,self.callbackSwState,queue_size=1)
 
 
-	def callbackSafety(self,arrived): 
+	def callbackObstacleAvoidance(self,obstacle):
 
-		self.gb=arrived.data
-		self.oa=False
-
-	def callbackGoal(self,new_obstacle):
-
-		self.oa=new_obstacle.data
-		self.gb=False
+		self.obstacle_avoidance=obstacle.data
 
     #def callbackSwState(self, smartwatch):
 
@@ -114,12 +106,13 @@ class Behavior():
  #Obstacle Avoidance Behavior
 		self.v_oa=0.0
 		self.w_oa=0.0
-		self.config=[0.0,0.0,0.0,0.0]
-		self.config_speed=[0.0,0.0,0.0,0.0]
+                self.config_oa=[0.0,0.0,0.0,0.0]
+		self.config_speed_oa=[0.0,0.0,0.0,0.0]
 #Gesture Based Behavior
 		self.v_gb=0.0
 		self.w_gb=0.0
-
+                self.config_gb=[0.0,0.0,0.0,0.0]
+                self.config_speed_gb=[0.0,0.0,0.0,0.0,]
       
 		self.subGBB = rospy.Subscriber('/gesture_based_behaviour',Twist, self.callbackGBB,queue_size=1)
 		self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',platform_control, self.callbackOAB,queue_size=1)
@@ -129,6 +122,9 @@ class Behavior():
     
 		self.v_gb=twist_gb.linear.x
 		self.w_gb=twist_gb.angular.z
+		self.config_gb= [0.0,0.0,0.0,0.0]
+		self.config_speed_gb= [0.0,0.0,0.0,0.0]
+
 		
 
     
@@ -136,8 +132,8 @@ class Behavior():
         
 		self.v_oa=twist_oa.body_vel.linear.x 
 		self.w_oa=twist_oa.body_vel.angular.z
-		self.config=twist_oa.body_config
-		self.config_speed=twist_oa.body_config_speed
+		self.config_oa=twist_oa.body_config
+		self.config_speed_oa=twist_oa.body_config_speed
 	
 
 class MultipleBehavior():
@@ -147,58 +143,69 @@ class MultipleBehavior():
 		self.r = Releaser()
 		self.g = Gain()
 		self.b = Behavior()
-		self.flag = True 
+		
+
+                # node rate
+                self.rate = rospy.get_param('rate')
 
 		#define Publisher
 		self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
 		self.pub_arrived_update = rospy.Publisher ('/arrived',Bool,queue_size=0)
+                self.pub_escape = rospy.Publisher("/escape", Bool, queue_size=0)
     
 	def BehaviorCoordination (self):
         
 		self.body_vel=Twist()
 		threshold = 12
 		G = self.g.human_influence * 0.1
-			
+		config = [0.0,0.0,0.0,0.0]
+                config_speed = [0.0,0.0,0.0,0.0]
+
 		q = platform_control()
 
+                r = rospy.Rate(self.rate)
 		while not rospy.is_shutdown():
 		
-			if self.r.gb:
+			if not self.r.obstacle_avoidance:
 
 				print "|GESTURE BASED|"
 				self.body_vel.linear.x=self.b.v_gb
 				self.body_vel.angular.z=self.b.w_gb
+                                config = self.b.config_gb
+                                config_speed = self.b.config_speed_gb
 
-			elif self.r.oa: 
+			elif self.r.obstacle_avoidance: 
 
 				print "|OBSTACLE AVOIDANCE|"
-				self.body_vel.linear.x=self.b.v_oa*(1-G)+(self.b.v_gb*G)
+				self.body_vel.linear.x=self.b.v_oa#*(1-G)+(self.b.v_gb*G)
 				self.body_vel.angular.z=self.b.w_oa
+                                config = self.b.config_oa
+                                config_speed = self.b.config_speed_oa
 
 				if self.g.human_influence > threshold:
 				        self.body_vel.linear.x=0.0
 				        self.body_vel.angular.z=0.0                                       
 
-                                        self.b.config=[0.0,0.0,0.0,0.0]
-                                        self.b.config_speed=[0.0,0.0,-1,0.0]
+                                        config=[0.0,0.0,0.0,0.0]
+                                        config_speed=[0.0,0.0,-1,0.0]
 
                                         q.body_vel = self.body_vel
-                                        q.body_config=self.b.config
-                                        q.body_config_speed=self.b.config_speed
+                                        q.body_config=config
+                                        q.body_config_speed=config_speed
 
                                         self.pub_platform_control.publish(q)
-                                        
+#                                       config_speed =[0.0,0.0,0.0,0.0]
                                         rospy.sleep(3)
 					self.pub_arrived_update.publish(True)
-#					self.r.gb = True
+                                        self.pub_escape.publish(True)
 
 			q.body_vel = self.body_vel
-			q.body_config=self.b.config
-			q.body_config_speed=self.b.config_speed
+			q.body_config=config
+			q.body_config_speed=config_speed
 
 			self.pub_platform_control.publish(q)
 
-        
+                        r.sleep()
 
 if __name__== '__main__':
 
