@@ -14,7 +14,7 @@
 
     <node name="rad2deg" pkg="gb_control" type="rad2deg.py" />
 
-    <node name="attitude2body_vel" pkg="gb_control" type="attitude2body_vel.py">
+    <node name="gb_control_to_coordination" pkg="gb_control" type="gb_control_to_coordination.py">
     	<param name="gb_control_type" value="attitude" />
     </node>
 
