@@ -92,7 +92,7 @@ class Gain():
 
 		self.human_influence=0
 
-		self.sub_human_influence = rospy.Subscriber ( '/human_influence',Int64,self.callbackHumanInfluence,queue_size=1)
+		self.sub_human_influence = rospy.Subscriber ( '/human_influence',Float32,self.callbackHumanInfluence,queue_size=1)
 	
 	def callbackHumanInfluence(self, influence):
 		
@@ -156,8 +156,7 @@ class MultipleBehavior():
 	def BehaviorCoordination (self):
         
 		self.body_vel=Twist()
-		threshold = 12
-		G = self.g.human_influence * 0.1
+		threshold = 24.0
 		config = [0.0,0.0,0.0,0.0]
                 config_speed = [0.0,0.0,0.0,0.0]
 
@@ -177,7 +176,9 @@ class MultipleBehavior():
 			elif self.r.obstacle_avoidance: 
 
 				print "|OBSTACLE AVOIDANCE|"
-				self.body_vel.linear.x=self.b.v_oa#*(1-G)+(self.b.v_gb*G)
+		                G = self.g.human_influence / threshold
+                                rospy.loginfo("b.v_gb * G %s", self.b.v_gb*G)
+				self.body_vel.linear.x=self.b.v_oa*(1-G)+(self.b.v_gb*G)
 				self.body_vel.angular.z=self.b.w_oa
                                 config = self.b.config_oa
                                 config_speed = self.b.config_speed_oa
@@ -195,7 +196,7 @@ class MultipleBehavior():
 
                                         self.pub_platform_control.publish(q)
 #                                       config_speed =[0.0,0.0,0.0,0.0]
-                                        rospy.sleep(3)
+                                        rospy.sleep(1)
 					self.pub_arrived_update.publish(True)
                                         self.pub_escape.publish(True)
 

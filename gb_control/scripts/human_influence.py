@@ -3,7 +3,7 @@
 ################################################################
 
 import rospy
-from std_msgs.msg import String, Bool, Int64
+from std_msgs.msg import String, Bool, Int64, Float32
 from sensor_msgs.msg import Image,CompressedImage,Range,Imu
 from geometry_msgs.msg import Twist,Pose,Vector3Stamped
 
@@ -51,7 +51,7 @@ class HumanIntention():
         self.rate=rospy.get_param('rate',200)
 
         self.subSmartwatchObstacle = rospy.Subscriber('/synch_oa_flag',Bool,self.callbackObstacleAvoidance,queue_size=1)
-        self.pub_human_influence = rospy.Publisher ( '/human_influence',Int64,queue_size=0)
+        self.pub_human_influence = rospy.Publisher ( '/human_influence',Float32,queue_size=0)
         self.HumanTendencyEvaluation()
 
 
