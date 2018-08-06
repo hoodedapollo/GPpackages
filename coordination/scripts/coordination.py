@@ -73,68 +73,90 @@ class Releaser():
 
 	    
 		self.obstacle_avoidance=False
-		#self.smartwatch_state=False
+		self.smartwatch_state=False
 		self.subObstacleAvoidance = rospy.Subscriber('/synch_oa_flag',Bool,self.callbackObstacleAvoidance,queue_size=1)
-		#self.subSwState = rospy.Subscriber('/smartwatch_flag',Bool,self.callbackSwState,queue_size=1)
+		self.subSwState = rospy.Subscriber('is_publishing',Bool,self.callbackSwState,queue_size=1)
 
 
 	def callbackObstacleAvoidance(self,obstacle):
 
 		self.obstacle_avoidance=obstacle.data
 
-    #def callbackSwState(self, smartwatch):
+	def callbackSwState(self, smartwatch):
 
-    #self.smartwatch_state = smartwatch.data
+		self.smartwatch_state = smartwatch.data
 
 class Gain():
 
 	def __init__(self):
 
-		self.human_influence=0
+		self.human_influence = 0.0
+		self.m_emotion = 0.0 
+		self.subHumanInfluence = rospy.Subscriber ( '/human_influence',Float32,self.callbackHumanInfluence,queue_size=1)
+		self.subEmotion = rospy.Subscriber ('/emotional_state',Float32,self.callbackEmotion,queue_size=1)
 
-		self.sub_human_influence = rospy.Subscriber ( '/human_influence',Float32,self.callbackHumanInfluence,queue_size=1)
-	
 	def callbackHumanInfluence(self, influence):
 		
 		self.human_influence=influence.data
 
+
+	def callbackEmotion(self,emotion):
+
+		self.m_emotion = emotion.data
+
 class Behavior():
 
 	def __init__(self):
-
         
- #Obstacle Avoidance Behavior
-		self.v_oa=0.0
-		self.w_oa=0.0
-                self.config_oa=[0.0,0.0,0.0,0.0]
-		self.config_speed_oa=[0.0,0.0,0.0,0.0]
-#Gesture Based Behavior
-		self.v_gb=0.0
-		self.w_gb=0.0
-                self.config_gb=[0.0,0.0,0.0,0.0]
-                self.config_speed_gb=[0.0,0.0,0.0,0.0,]
-      
+                #Emotional Behavior
+                self.q_e = platform_control()
+
+                #Obstacle Safety Behavior
+                self.q_os = platform_control()
+        
+                #Obstacle Avoidance Behavior
+	        self.q_oa = platform_control()
+
+                #Gesture Based Behavior
+		self.q_gb = platform_control()
+                
+                self.subEB = rospy.Subscriber('/emotional_behaviour',platform_control, self.callbackEB,queue_size=1)
+                self.subOSB = rospy.Subscriber('/obstacle_safety_behaviour',platform_control, self.callbackOSB,queue_size=1)
 		self.subGBB = rospy.Subscriber('/gesture_based_behaviour',Twist, self.callbackGBB,queue_size=1)
 		self.subOAB = rospy.Subscriber('/obstacle_avoidance_behaviour',platform_control, self.callbackOAB,queue_size=1)
-        
+
+        def callbackEB ( self, emotional_reaction):
+		
+		self.q_e.lights_raw = emotional_reaction.lights_raw
+		self.q_e.ear_rotate = emotional_reaction.ear_rotate
+		self.q_e.tail = self.tail = emotional_reaction.tail
+		self.q_e.eyelid_closure = emotional_reaction.eyelid_closure
+
+	def callbackOSB(self,twist_os):
+
+		self.q_os.body_vel.linear.x = twist_os.body_vel.linear.x
+        	self.q_os.body_vel.angular.z = twist_os.body_vel.angular.z
+               
+                self.q_os.lights_raw = self.q_e.lights_raw
+
 
 	def callbackGBB( self, twist_gb):
     
-		self.v_gb=twist_gb.linear.x
-		self.w_gb=twist_gb.angular.z
-		self.config_gb= [0.0,0.0,0.0,0.0]
-		self.config_speed_gb= [0.0,0.0,0.0,0.0]
+		self.q_gb.body_vel.linear.x = twist_gb.linear.x
+		self.q_gb.body_vel.angular.z = twist_gb.angular.z
 
-		
+                self.q_gb.lights_raw = self.q_e.lights_raw 
 
     
 	def callbackOAB(self, twist_oa):
         
-		self.v_oa=twist_oa.body_vel.linear.x 
-		self.w_oa=twist_oa.body_vel.angular.z
-		self.config_oa=twist_oa.body_config
-		self.config_speed_oa=twist_oa.body_config_speed
-	
+		self.q_oa.body_vel.linear.x = twist_oa.body_vel.linear.x 
+		self.q_oa.body_vel.angular.z = twist_oa.body_vel.angular.z
+		self.q_oa.body_config = twist_oa.body_config
+		self.q_oa.body_config_speed = twist_oa.body_config_speed
+	        
+                self.q_oa.lights_raw = self.q_e.lights_raw 
+
 
 class MultipleBehavior():
 
@@ -159,54 +181,71 @@ class MultipleBehavior():
 		threshold = 24.0
 		config = [0.0,0.0,0.0,0.0]
                 config_speed = [0.0,0.0,0.0,0.0]
+                
+                v_gb = self.b.q_gb.body_vel.linear.x
+                w_gb = self.b.q_gb.body_vel.angular.z
+
+                v_oa = self.b.q_oa.body_vel.linear.x
+                w_oa = self.b.q_oa.body_vel.angular.z
+
 
 		q = platform_control()
 
-                r = rospy.Rate(self.rate)
+                ra = rospy.Rate(self.rate)
 		while not rospy.is_shutdown():
+
+                    if self.r.smartwatch_state: 
 		
-			if not self.r.obstacle_avoidance:
+			    if not self.r.obstacle_avoidance:
 
-				print "|GESTURE BASED|"
-				self.body_vel.linear.x=self.b.v_gb
-				self.body_vel.angular.z=self.b.w_gb
-                                config = self.b.config_gb
-                                config_speed = self.b.config_speed_gb
+				    print "|GESTURE BASED|"
 
-			elif self.r.obstacle_avoidance: 
+                                    q = self.b.q_gb
 
-				print "|OBSTACLE AVOIDANCE|"
-		                G = self.g.human_influence / threshold
-                                rospy.loginfo("b.v_gb * G %s", self.b.v_gb*G)
-				self.body_vel.linear.x=self.b.v_oa*(1-G)+(self.b.v_gb*G)
-				self.body_vel.angular.z=self.b.w_oa
-                                config = self.b.config_oa
-                                config_speed = self.b.config_speed_oa
+			    elif self.r.obstacle_avoidance: 
 
-				if self.g.human_influence > threshold:
-				        self.body_vel.linear.x=0.0
-				        self.body_vel.angular.z=0.0                                       
+				    print "|OBSTACLE AVOIDANCE|"
 
-                                        config=[0.0,0.0,0.0,0.0]
-                                        config_speed=[0.0,0.0,-1,0.0]
+                                    q = self.b.q_oa
 
-                                        q.body_vel = self.body_vel
-                                        q.body_config=config
-                                        q.body_config_speed=config_speed
+				    G = self.g.human_influence / threshold
+				    rospy.loginfo("b.v_gb * G %s", self.b.v_gb*G)
+				    self.body_vel.linear.x=v_oa*(1-G)+(v_gb*G)
+				    self.body_vel.angular.z=w_oa
+				    config = self.b.q_oa.body_config
+				    config_speed = self.b.q_oa.config_speed
 
-                                        self.pub_platform_control.publish(q)
-#                                       config_speed =[0.0,0.0,0.0,0.0]
-                                        rospy.sleep(1)
-					self.pub_arrived_update.publish(True)
-                                        self.pub_escape.publish(True)
+                                    q.body_vel = self.body_vel
+                                    q.body_config=config
+                                    q.body_config_speed=config_speed
 
-			q.body_vel = self.body_vel
-			q.body_config=config
-			q.body_config_speed=config_speed
 
-			self.pub_platform_control.publish(q)
+				    if self.g.human_influence > threshold:
+					    self.body_vel.linear.x=0.0
+					    self.body_vel.angular.z=0.0                                       
 
-                        r.sleep()
+					    config=[0.0,0.0,0.0,0.0]
+					    config_speed=[0.0,0.0,-1,0.0]
+
+					    q.body_vel = self.body_vel
+					    q.body_config=config
+					    q.body_config_speed=config_speed
+
+					    self.pub_platform_control.publish(q)
+    #                                       config_speed =[0.0,0.0,0.0,0.0]
+					    rospy.sleep(1)
+					    self.pub_arrived_update.publish(True)
+					    self.pub_escape.publish(True)
+
+                    else:
+
+                            q=self.b.q_e
+
+			
+
+		    self.pub_platform_control.publish(q)
+
+		    ra.sleep()	
 
 if __name__== '__main__':
 

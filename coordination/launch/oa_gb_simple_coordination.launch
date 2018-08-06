@@ -24,4 +24,6 @@
 <!-- COORDINATION-->
     <node name="coordination" pkg="coordination" type="coordination.py"  /> 
 
+<!-- IS SMARTWATCH PUBLISHING  --> 
+    <node name="sw_is_pub" pkg="coordination" type="sw_is_pub.py" />
 </launch>
