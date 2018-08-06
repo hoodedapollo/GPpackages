@@ -84,20 +84,20 @@ class GestureBasedBehaviour():
 		self.rpy[2] = sw_data.vector.z
 
 
-		newroll=self.rpy[0]+70
+		newroll=self.rpy[0]+90
 
-		if  -15 < newroll < 15 and -20 < self.rpy[1] < 20:
+		if  -35 < newroll < 35 and -20 < self.rpy[1] < 20:
 			self.sw_vel.linear.x=0.0
 			self.sw_vel.angular.z=0.0
 			print ('MiRo STAY Still')
 
-		elif self.rpy[1] > 40 or self.rpy[1] < -60:
-			self.sw_vel.linear.x=self.rpy[1]*6
+		elif self.rpy[1] > 50 or self.rpy[1] < -60:
+			self.sw_vel.linear.x=0.0#self.rpy[1]*6
 			self.sw_vel.angular.z=0.0
 			print ( 'max linear velocity')
 
 		else:
-			self.sw_vel.linear.x=0.0
+			self.sw_vel.linear.x=self.rpy[1]*-7
 			self.sw_vel.angular.z=-newroll*0.8*pi/180
 			print ('MiRo follow your owner')
 

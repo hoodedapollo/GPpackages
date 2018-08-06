@@ -22,6 +22,6 @@
     <include file="$(find miro_oa_behaviour)/launch/obstacle_avoidance_to_coordination.launch" />
 
 <!-- COORDINATION-->
-    <node name="coordination" pkg="coordination" type="coordination.py" output="screen" /> 
+    <node name="coordination" pkg="coordination" type="coordination.py"  /> 
 
 </launch>

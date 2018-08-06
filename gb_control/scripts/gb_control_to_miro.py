@@ -89,7 +89,7 @@ class GestureBasedBehaviour():
 			print ('MiRo STAY Still')
 
 		elif self.rpy[1] > 40 or self.rpy[1] < -60:
-			self.sw_vel.linear.x=self.rpy[1]*6
+			self.sw_vel.linear.x=self.rpy[1]*7
 			self.sw_vel.angular.z=0.0
 			print ( 'max linear velocity')
 

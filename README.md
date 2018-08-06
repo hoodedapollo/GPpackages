@@ -27,7 +27,7 @@ This problem is composed of multiple aspects:
 ### ROS
 This project is developed using [ROS](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
-### Smartwatch and Smartphone set up
+### Smartwatch and Smartphone Setup
 In order to publish imu data from your smartwatch to ROS nodes you must have a smartwatch paired with a smartphone.
 The smartphone acts as the bridge between the smartwatch and the ros master running on your computer.
 
@@ -55,7 +55,7 @@ export GAZEBO_PLUGIN_PATH=/home/user/mdk/bin/deb64:${GAZEBO_PLUGIN_PATH}
 
 change user with your user name and deb64 with your distribution from those available under the mdk/bin directory
 
-### ROS enviroment setup
+### ROS enviroment Setup
 This repository contains all the packages needed to run the project in simulation as well as with a real Miro.
 
 Create a catkin workspace and clone all the packages in the src folder
