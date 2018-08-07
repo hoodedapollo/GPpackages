@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import String, Int32
 
-from miro_msgs.msg import platform_sensors,core_state,platform_mics
+from miro_msgs.msg import platform_sensors,core_state,platform_mics,platform_control
 
 #The target will be to take information from sensors as touch sensors. Emotional state of miro will be influenced by these.
 #We consider where is touched and how many time is touched

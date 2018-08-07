@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import rospy
 from std_msgs.msg import String, Float32
 
@@ -20,8 +21,9 @@ class emotional_behaviour:
 		# subscribe
 		self.sub_affect = rospy.Subscriber('/emotional_state', Float32, self.callback_emotional_behaviour,queue_size = 1)
 		#publisher
-		self.pub_emotional_behaviour = rospy.Publisher('/miro/sim01/platform/control',platform_control, queue_size = 0)
-		
+		self.pub_emotional_behaviour = rospy.Publisher('/emotional_behaviour',platform_control, queue_size = 0)
+		self.pub_light_real = rospy.Publisher ('/miro/rob01/platform/control', platform_control, queue_size = 0)
+
 	def callback_emotional_behaviour(self,data_affect):
 		self.emotional_state = data_affect.data
 		print(self.emotional_state)
@@ -41,7 +43,7 @@ class emotional_behaviour:
 				q.tail =self.tail =  0.0
 				q.ear_rotate = self.ear_rotate = [1.0,1.0]
 				q.eyelid_closure = self.eyelid_closure = 0.0	
-				self.pub_emotional_behaviour.publish(q)
+				
 			
 			elif(self.emotional_state < 0.2 ): #ANGRY
 				q = platform_control()
@@ -49,9 +51,7 @@ class emotional_behaviour:
 				q.ear_rotate = self.ear_rotate = [1.0,1.0]
 				q.eyelid_closure = self.eyelid_closure = 0.0
 				q.tail = self.tail = 1.0
-				self.pub_emotional_behaviour.publish(q)
 						
-	
 
 			elif (self.emotional_state >=0.5 and self.emotional_state < 0.7):  #RELAXED OR BORED
 				q = platform_control()	
@@ -59,7 +59,7 @@ class emotional_behaviour:
 				q.eyelid_closure = self.eyelid_closure  = 0.5
 				q.tail = self.tail = -1.0
 				q.ear_rotate = self.ear_rotate = [0.0,0.0]
-				self.pub_emotional_behaviour.publish(q)
+				
 								
 			elif(self.emotional_state > 0.3 and self.emotional_state < 0.5): #ACTIVE
 				q = platform_control()
@@ -67,7 +67,7 @@ class emotional_behaviour:
 				q.eyelid_closure = self.eyelid_closure = 0.0
 				q.tail = self.tail = 1.0
 				q.ear_rotate = self.ear_rotate = [0.0,0.0]
-				self.pub_emotional_behaviour.publish(q)
+				
 					
 
 			elif (self.emotional_state >= 0.8): #HAPPY OR EXCITED
@@ -76,7 +76,7 @@ class emotional_behaviour:
 				q.eyelid_closure = self.eyelid_closure = 0.0
 				q.tail = self.tail = 1.0
 				q.ear_rotate = self.ear_rotate = [0.0,0.0]
-				self.pub_emotional_behaviour.publish(q)
+				
 
 			
 
@@ -86,8 +86,12 @@ class emotional_behaviour:
 				q.eyelid_closure = self.eyelid_closure = 0.0
 				q.ear_rotate = self.ear_rotate = [0.0,0.0]
 				q.tail = self.tail = 0.0
-				self.pub_emotional_behaviour.publish(q)
 			
+
+			self.pub_emotional_behaviour.publish(q)
+			qe=platform_control()
+			qe.lights_raw = q.lights_raw
+			self.pub_light_real.publish(qe)
 						
 		
 	def main(self):

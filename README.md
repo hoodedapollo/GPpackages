@@ -25,7 +25,9 @@ This problem is composed of multiple aspects:
 ## Getting Started
 
 ### ROS
-This project is developed using [ROS](http://wiki.ros.org/kinetic/Installation/Ubuntu).
+This project is developed using [ROS](http://wiki.ros.org/kinetic/Installation/Ubuntu):
+* rosdistro: kinetic
+* rosversion: 1.12.13
 
 ### Smartwatch and Smartphone Setup
 In order to publish imu data from your smartwatch to ROS nodes you must have a smartwatch paired with a smartphone.
