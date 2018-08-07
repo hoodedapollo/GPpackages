@@ -64,6 +64,13 @@
     <!-- SYNCHRONOUS OA BEHAVIOUR FLAG PUBLISHER -->
     <node name="synch_behaviour_pub" pkg="miro_oa_behaviour" type="synch_behaviour_pub.py" />
 
+<!-- EMOTIONAL BEHAVIOUR -->
+    <node name="emotional_behaviour" pkg="miro_emo_behaviour" type="emotional_behaviour.py" />
+
+    <node name="emotional_reaction" pkg="miro_emo_behaviour" type="emotional_reaction.py" />
+
+    <node name="emotional_state" pkg="miro_emo_behaviour" type="emotional_state.py" />
+
 <!-- RVIZ VISUALIZATION -->
     <node name="rviz" pkg="rviz" type="rviz"
     args="-d $(find miro_oa_behaviour)/rviz/miro_obstacle_avoidance.rviz" />
