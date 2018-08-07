@@ -69,7 +69,7 @@ class HumanIntention():
 
             if self.obstacle_avoidance:
 
-                if self.g.gesture > 1.5:
+                if self.g.gesture > 2:
 
                     self.lastyaw=True
 

@@ -15,7 +15,7 @@
     <node name="rad2deg" pkg="gb_control" type="rad2deg.py" />
 
     <node name="gb_control_to_coordination" pkg="gb_control" type="gb_control_to_coordination.py">
-    	<param name="gb_control_type" value="linear" />
+    	<param name="gb_control_type" value="attitude" />
     </node>
 
 <!--	 <node name="human_influence" pkg="gb_control" type="human_influence.py" /> -->
