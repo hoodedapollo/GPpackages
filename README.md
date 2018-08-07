@@ -47,6 +47,10 @@ Download the [Miro Developer kit](http://labs.consequentialrobotics.com/miro/mdk
 Follow the instructions from Consequential Robotics [Miro: Prepare Workstation](https://consequential.bitbucket.io/Developer_Preparation_Prepare_workstation.html) to set up your workstation to work with miro. 
 Strictly follow the instructions in the Install MDK section as the following steps will rely on this.
 
+Not necessary to make static IP for your workstation (laptop) while setting up connection with MiRo.
+
+[You may skip the static IP part, which is described in the setup files in this repository. Also you can skip the ROS and Gazebo installation part, if you already have it on your workstation]
+
 We use the gazebo_ros package to run the gazebo simulation, instead of the script file provided by consequential robotics.  
 For this reason add this two line to the .bashrc file. This makes available to gazebo the models and the plugins provided by the Miro Developer Kit
 
@@ -63,10 +67,9 @@ This repository contains all the packages needed to run the project in simulatio
 Create a catkin workspace and clone all the packages in the src folder
 
 ```
-$ mkdir -p catkin_ws/src
-$ cd catkin_ws && catkin_make
-$ cd src && git clone https://github.com/hoodedapollo/GPpackages.git
-$ cd .. && source devel/setup.bash
+$ git clone https://github.com/hoodedapollo/GPpackages.git
+$ cd GPpackages && catkin_make
+$ source devel/setup.bash
 ```
 ### Run the project
 
@@ -78,10 +81,22 @@ Make sure that the IP in the IMU_stream app on the  smartphone is correct
 
 Open the IMU_stream app on smartwatch 
 
+OPTIONAL:
+The simulated miro does not have touch senors nor led lights which are used in the emotional behaviour.
+For this reason, if you want to use a real miro for the emotial behaviour you must connect it to the ROS master.
+
+```
+$ ssh root@<MIRO-IP> 
+$ sudo nano ./profile
+```
+Insert your IP after ROS_MASTER_IP
+
+For more detailed instructions see [MIRO: Commission MIRO](https://consequential.bitbucket.io/Developer_Preparation_Commission_MIRO.html)
+
 The following command will start the project
 
 ```
-$ roslaunch coordination oa_gb_simple_coordination.launch
+$ roslaunch coordination complete_launcher.launch
 ```
 
 A gazebo enviroment will show up and rviz visualizer will show the odometry data.
