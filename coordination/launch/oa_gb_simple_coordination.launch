@@ -22,7 +22,7 @@
     <include file="$(find miro_oa_behaviour)/launch/obstacle_avoidance_to_coordination.launch" />
 
 <!-- COORDINATION-->
-    <node name="coordination" pkg="coordination" type="coordination.py"  /> 
+    <node name="coordination" pkg="coordination" type="coordination.py"  output="screen"/> 
 
 <!-- IS SMARTWATCH PUBLISHING  --> 
     <node name="sw_is_pub" pkg="coordination" type="sw_is_pub.py" />

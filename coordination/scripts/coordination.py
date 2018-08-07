@@ -119,6 +119,7 @@ class Behavior():
 
                 #Gesture Based Behavior
 		self.q_gb = platform_control()
+                self.q_gb.body_config = [0.0,0.0,0.0,0.0]
                 
                 self.subEB = rospy.Subscriber('/emotional_behaviour',platform_control, self.callbackEB,queue_size=1)
                 self.subOSB = rospy.Subscriber('/obstacle_safety_behaviour',platform_control, self.callbackOSB,queue_size=1)
@@ -182,11 +183,6 @@ class MultipleBehavior():
 		config = [0.0,0.0,0.0,0.0]
                 config_speed = [0.0,0.0,0.0,0.0]
                 
-                v_gb = self.b.q_gb.body_vel.linear.x
-                w_gb = self.b.q_gb.body_vel.angular.z
-
-                v_oa = self.b.q_oa.body_vel.linear.x
-                w_oa = self.b.q_oa.body_vel.angular.z
 
 
 		q = platform_control()
@@ -203,17 +199,22 @@ class MultipleBehavior():
                                     q = self.b.q_gb
 
 			    elif self.r.obstacle_avoidance: 
-
 				    print "|OBSTACLE AVOIDANCE|"
 
-                                    q = self.b.q_oa
+                                    v_gb = self.b.q_gb.body_vel.linear.x
+                                    w_gb = self.b.q_gb.body_vel.angular.z
+
+                                    v_oa = self.b.q_oa.body_vel.linear.x
+                                    w_oa = self.b.q_oa.body_vel.angular.z
+
 
 				    G = self.g.human_influence / threshold
-				    rospy.loginfo("b.v_gb * G %s", self.b.v_gb*G)
+				    rospy.loginfo("b.v_gb * G %s", v_gb*G)
 				    self.body_vel.linear.x=v_oa*(1-G)+(v_gb*G)
 				    self.body_vel.angular.z=w_oa
 				    config = self.b.q_oa.body_config
-				    config_speed = self.b.q_oa.config_speed
+				    config_speed = self.b.q_oa.body_config_speed
+                            
 
                                     q.body_vel = self.body_vel
                                     q.body_config=config
@@ -240,6 +241,8 @@ class MultipleBehavior():
                     else:
 
                             q=self.b.q_e
+                            print "|EMOTION|"
+
 
 			
 

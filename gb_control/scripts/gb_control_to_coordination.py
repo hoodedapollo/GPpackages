@@ -59,20 +59,20 @@ class GestureBasedBehaviour():
 		
 		
         
-		if  -2 < self.last_acc[0] < 2 and -2 < self.last_acc[1] < 2:
+		if  -5 < self.last_acc[0] < 5 and -5 < self.last_acc[1] < 5:
 			self.body_vel.linear.x=0.0
 			self.body_vel.angular.z=0.0
 			print ('MiRo STAY Still')
 		
-		if -8 < self.last_acc[0] > 8:
+		elif -8 < self.last_acc[0] > 8:
 
 			self.body_vel.linear.x=-self.last_acc[0]*50
 			self.body_vel.angular.z=0.0
 		
 		else:
 
-			self.body_vel.linear.x=-self.last_acc[0]*50
-			self.body_vel.angular.z=self.last_acc[1]*0.5
+			self.body_vel.linear.x = -self.last_acc[0]*50
+			self.body_vel.angular.z = -self.last_acc[1]*0.1
 			print ('MiRo Go normal')
 		
 			
