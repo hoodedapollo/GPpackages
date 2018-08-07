@@ -35,13 +35,17 @@
 
     </node>
 
-<!--    <node name="human_influence" pkg="gb_control" type="human_influence.py" /> -->
+     <node name="human_influence" pkg="gb_control" type="human_influence.py" output="screen"/> 
 
-
-<!-- OBSTACLE AVOIDANCE BEHAVIOUR -->
+<!-- OBSTACLE SAFAETY BEHAVIOUR -->
 
     <!-- CHECK OBSTACLE SAFETY -->
-    <node name="check_obstacle_safety" pkg="miro_oa_behaviour" type="check_obstacle_safety.py" />
+    <node name="check_obstacle_safety" pkg="miro_os_behaviour" type="check_obstacle_safety.py" />
+
+    <!-- OBSTACLE SAFETY TO COORDINATION -->
+    <node name="obstacle_safety_to_coordination" pkg="miro_os_behaviour" type="obstacle_safety_to_coordination.py" />
+
+<!-- OBSTACLE AVOIDANCE BEHAVIOUR -->
 
     <!-- NEW OBSTACLE DETECTION -->
     <node name ="new_obstacle_detection" pkg="miro_oa_behaviour" type="new_obstacle_detection.py" />

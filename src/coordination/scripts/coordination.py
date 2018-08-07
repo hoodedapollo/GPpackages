@@ -71,12 +71,17 @@ class Releaser():
 
 	def __init__(self):
 
-	    
+	        self.safe = True
 		self.obstacle_avoidance=False
 		self.smartwatch_state=False
 		self.subObstacleAvoidance = rospy.Subscriber('/synch_oa_flag',Bool,self.callbackObstacleAvoidance,queue_size=1)
 		self.subSwState = rospy.Subscriber('is_publishing',Bool,self.callbackSwState,queue_size=1)
+                self.subSafe = rospy.Subscriber('/safe',Bool,self.callbackSafe,queue_size=1)
+        
+        
+        def callbackSafe ( self, safe ):
 
+                self.safe = safe.data
 
 	def callbackObstacleAvoidance(self,obstacle):
 
@@ -110,6 +115,9 @@ class Behavior():
         
                 #Emotional Behavior
                 self.q_e = platform_control()
+                self.q_e.body_config = [0.0,0.0,0.0,0.0]
+                self.q_e.body_vel.linear.x = 0.0
+                self.q_e.body_vel.angular.z = 0.0
 
                 #Obstacle Safety Behavior
                 self.q_os = platform_control()
@@ -137,6 +145,7 @@ class Behavior():
 
 		self.q_os.body_vel.linear.x = twist_os.body_vel.linear.x
         	self.q_os.body_vel.angular.z = twist_os.body_vel.angular.z
+                self.q_os.body_config = [0.0,0.0,0.0,0.0]
                
                 self.q_os.lights_raw = self.q_e.lights_raw
 
@@ -175,6 +184,7 @@ class MultipleBehavior():
 		self.pub_platform_control = rospy.Publisher('/miro/sim01/platform/control', platform_control, queue_size=0)
 		self.pub_arrived_update = rospy.Publisher ('/arrived',Bool,queue_size=0)
                 self.pub_escape = rospy.Publisher("/escape", Bool, queue_size=0)
+                self.pub_lights_pattern = rospy.Publisher("miro/rob01/platform/control", platform_control, queue_size=0)
     
 	def BehaviorCoordination (self):
         
@@ -240,13 +250,21 @@ class MultipleBehavior():
 
                     else:
 
-                            q=self.b.q_e
-                            print "|EMOTION|"
+                        if not self.r.safe:
+                                print "|OBSTACLE AVOIDANCE|"
+                                q=self.b.q_os
+
+                        else:
+
+                                q=self.b.q_e
+                                print "|EMOTION|"
 
 
 			
-
+                    q_e = platform_control()
+                    q_e.lights_raw = q.lights_raw
 		    self.pub_platform_control.publish(q)
+                    self.pub_lights_pattern.publish(q_e)
 
 		    ra.sleep()	
 
