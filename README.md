@@ -67,8 +67,8 @@ This repository contains all the packages needed to run the project in simulatio
 Create a catkin workspace and clone all the packages in the src folder
 
 ```
-$ git clone https://github.com/hoodedapollo/GPpackages.git
-$ cd GPpackages && catkin_make
+$ git clone https://github.com/hoodedapollo/MiroBehaviours.git
+$ cd MiroBehaviours && catkin_make
 $ source devel/setup.bash
 ```
 ### Run the project
