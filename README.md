@@ -172,7 +172,7 @@ This is what the oa_gb_simple_coordination.launch file does.
 ##Results 
 
 ### Gesture Based linear vs attitude control
-[![GestureBasedlinearvsattitudeControl](https://ibb.co/czCKC9.png)](https://drive.google.com/open?id=1aDZP9WhCtvIU5SouSsq_7nUBMfI9DegY)
+[![GestureBasedlinearvsattitudeControl](https://ibb.co/czCKC9.jpg)](https://drive.google.com/open?id=1aDZP9WhCtvIU5SouSsq_7nUBMfI9DegY)
 
 ### Gesture Based and Obstacle Avoidance Coordination test
 
