@@ -175,8 +175,10 @@ This is what the oa_gb_simple_coordination.launch file does.
 [![GestureBasedlinearvsattitudeControl](https://img.youtube.com/vi/yHwlI645Xfs/0.jpg)](https://www.youtube.com/watch?v=yHwlI645Xfs&feature=youtu.be).
 
 ### Gesture Based and Obstacle Avoidance Coordination test
+[![Gesture Based and Obstacle Avoidance Coordination test](https://img.youtube.com/vi/Br_8CocTe74/0.jpg)](https://www.youtube.com/watch?v=Br_8CocTe74&feature=youtu.be).
 
 ### Autonomous Emotional Behavior
+[![Autonomous Emotional Behavior](https://img.youtube.com/vi/JuykWYto3PA/0.jpg)](https://www.youtube.com/watch?v=JuykWYto3PA&feature=youtu.be).
 
 ## Acknowledgments
 
