@@ -169,10 +169,10 @@ To run the overall architecture commands are not published directly to miro as i
 sections but they are provided to the cordiation node.
 This is what the oa_gb_simple_coordination.launch file does.
 
-##Results 
+## Results 
 
 ### Gesture Based linear vs attitude control
-[![GestureBasedlinearvsattitudeControl](https://ibb.co/czCKC9.jpg)](https://drive.google.com/open?id=1aDZP9WhCtvIU5SouSsq_7nUBMfI9DegY)
+[![GestureBasedlinearvsattitudeControl](https://img.youtube.com/vi/yHwlI645Xfs/0.jpg)](https://www.youtube.com/watch?v=yHwlI645Xfs&feature=youtu.be).
 
 ### Gesture Based and Obstacle Avoidance Coordination test
 
@@ -184,7 +184,7 @@ This is what the oa_gb_simple_coordination.launch file does.
 * [imu_stream](https://github.com/EmaroLab/imu_stream)
 * [imu_complementary_filter](http://wiki.ros.org/imu_complementary_filter)
 
-###Authors
+### Authors
 
 * Marco Ruzzon: marco.ruzzon@mail.polimi.it
 * Roberta Delrio: roberta.delrio@studio.unibo.it
